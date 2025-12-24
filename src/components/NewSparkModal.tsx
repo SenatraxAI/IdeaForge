@@ -1,0 +1,117 @@
+import { useState } from 'react';
+import { X, Sparkles, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface NewSparkModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (title: string, description: string) => Promise<void>;
+}
+
+export default function NewSparkModal({ isOpen, onClose, onSubmit }: NewSparkModalProps) {
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title || !description) return;
+
+        setIsSubmitting(true);
+        try {
+            await onSubmit(title, description);
+            setTitle('');
+            setDescription('');
+            onClose();
+        } catch (err) {
+            console.error("Submission failed", err);
+            alert("The Forge failed to process your spark. Please check your connection.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                        className="relative w-full max-w-3xl bg-[#010409]/90 backdrop-blur-3xl border border-white/[0.05] p-12 lg:p-16 rounded-[3rem] shadow-[0_0_100px_rgba(37,99,235,0.1)] overflow-hidden font-plus"
+                    >
+                        {/* Visual Depth */}
+                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 blur-[80px] rounded-full pointer-events-none" />
+
+                        <button
+                            onClick={onClose}
+                            className="absolute top-10 right-10 p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all group"
+                        >
+                            <X size={20} className="group-hover:rotate-90 transition-transform" />
+                        </button>
+
+                        <div className="relative z-10 mb-12">
+                            <div className="flex items-center gap-3 text-blue-500 font-black uppercase tracking-[0.4em] text-[10px] mb-4">
+                                <div className="w-8 h-px bg-blue-500" />
+                                Injection Sequence
+                            </div>
+                            <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Initialize Spark<span className="text-blue-600">.</span></h2>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="relative z-10 space-y-10">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] px-2">Core Identity</label>
+                                <input
+                                    autoFocus
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter your concept's focus..."
+                                    className="w-full bg-white/[0.02] border border-white/[0.05] rounded-3xl px-8 py-5 text-xl font-medium text-white placeholder:text-slate-800 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] px-2">Friction & Vision</label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Deconstruct the problem and your proposed solution..."
+                                    rows={5}
+                                    className="w-full bg-white/[0.02] border border-white/[0.05] rounded-[2rem] px-8 py-6 text-xl font-medium text-white placeholder:text-slate-800 focus:outline-none focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all resize-none"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || !title || !description}
+                                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-20 disabled:grayscale text-white py-6 rounded-[2rem] font-black italic uppercase tracking-tighter text-2xl shadow-2xl shadow-blue-600/30 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-4 group"
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 className="animate-spin" size={24} />
+                                ) : (
+                                    <>
+                                        <Sparkles size={24} className="stroke-[2.5px] group-hover:rotate-12 transition-transform" />
+                                        Ignite Neural Core
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
+                        .font-plus { font-family: 'Plus Jakarta Sans', sans-serif; }
+                        `}} />
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+}
