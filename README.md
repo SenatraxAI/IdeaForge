@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🧠 Idea Validator - Frontend UI
 
 The client-side interface for "The Neural Architect". Built with React, Vite, and Framer Motion.
@@ -25,3 +26,6 @@ The client-side interface for "The Neural Architect". Built with React, Vite, an
     ```bash
     npm run dev
     ```
+=======
+# IdeaForge_frontend
+>>>>>>> 6091c571b36d9cbc2d9bebfe15239366538085fa
