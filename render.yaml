@@ -1,0 +1,41 @@
+services:
+  # --------------------------------------------------------------------------------
+  # BACKEND SERVICE (Node.js/Express)
+  # --------------------------------------------------------------------------------
+  - type: web
+    name: ideaforge-backend
+    env: node
+    plan: free
+    # 1. Go into backend folder, 2. Install dependencies, 3. Compile TypeScript
+    buildCommand: cd backend && npm install && npm run build
+    # Start the compiled server
+    startCommand: cd backend && npm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      # Backend Port (Render sets PORT env var automatically, app must listen on it)
+      - key: PORT
+        value: 10000
+    autoDeploy: false
+
+  # --------------------------------------------------------------------------------
+  # FRONTEND SERVICE (Static Site)
+  # --------------------------------------------------------------------------------
+  - type: web
+    name: ideaforge-frontend
+    env: static
+    # 1. Go into frontend, 2. Install, 3. Build Vite App
+    buildCommand: cd frontend && npm install && npm run build
+    # The folder where Vite puts the built assets
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: ideaforge-backend
+          property: url
+    autoDeploy: false
