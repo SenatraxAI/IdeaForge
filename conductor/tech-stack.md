@@ -15,7 +15,7 @@
 *   **Vector Search:** MongoDB Atlas Vector Search
 
 ## Authentication
-*   Clerk Auth
+*   Kinde Auth
 
 ## AI Model
 *   Gemini 2.5 Flash

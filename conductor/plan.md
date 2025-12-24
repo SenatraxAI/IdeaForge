@@ -6,19 +6,19 @@
 - [x] Establish development workflow and standards in `workflow.md`
 - [x] Create initial development plan (`plan.md`)
 
-## Phase 1: Project Setup & Core Backend
+## Phase 1: Project Setup & Core Backend [checkpoint: done]
 
-- [~] Initialize the project structure (frontend, backend).
-- [ ] Set up the Node.js/Express backend.
-- [ ] Configure MongoDB database connection.
-- [ ] Set up basic authentication with Clerk.
+- [x] Initialize the project structure (frontend, backend). ef706c5
+- [x] Set up the Node.js/Express backend.
+- [x] Configure MongoDB database connection.
+- [x] Set up Kinde authentication.
 
-## Phase 2: Core "Forge" AI Features (Backend)
+## Phase 2: Core "Forge" AI Features (Backend) [checkpoint: done]
 
-- [ ] Implement the "Idea Notebook" (CRUD for ideas).
-- [ ] Integrate with Gemini 2.5 Flash for the "Forge" engine.
-- [ ] Implement the "Stress-Tester" AI agent, ensuring JSON output.
-- [ ] Implement the "AI Idea Counselor".
+- [x] Implement the "Idea Notebook" (CRUD for ideas).
+- [x] Integrate with Gemini 2.5 Flash for the "Forge" engine.
+- [x] Implement the "Stress-Tester" AI agent, ensuring JSON output.
+- [x] Implement the "AI Idea Counselor".
 
 ## Phase 3: Frontend Development - "Forge" UI
 
