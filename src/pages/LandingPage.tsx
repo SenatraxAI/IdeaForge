@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 export default function LandingPage() {
-    const { login, register, logout, isAuthenticated, user, isLoading } = useKindeAuth();
+    const { login, register, isAuthenticated, user, isLoading } = useKindeAuth();
     const navigate = useNavigate();
 
     if (isLoading) return <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center font-sans">
