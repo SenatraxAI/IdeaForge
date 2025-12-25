@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef, ReactNode } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, Sparkles, AlertTriangle, ShieldCheck, Loader2, Info, Save, Edit3, Target, TrendingUp, Search, MessageSquare, Send, X, Workflow, Cpu, Rocket, DollarSign, Zap, RefreshCw, Trash2, Wand2, Check } from 'lucide-react';
 import { ideaApi } from '../lib/api';
+import Logo from '../components/Logo';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const renderMarkdown = (text: string): ReactNode => {
@@ -352,23 +354,31 @@ export default function IdeaDetail() {
     const isHighViability = (idea.score || 0) >= 80;
 
     return (
-        <div className="min-h-screen bg-[#010409] text-slate-300 p-8 lg:p-20 font-plus overflow-x-hidden relative">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#010409] text-slate-900 dark:text-slate-300 p-4 md:p-8 lg:p-20 font-plus overflow-x-hidden relative transition-colors duration-300">
             {/* Visual Depth */}
             <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-blue-600/[0.03] blur-[150px] pointer-events-none rounded-full" />
             <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-indigo-600/[0.02] blur-[100px] pointer-events-none rounded-full" />
 
             <div className="w-full xl:px-32 3xl:px-48 relative z-10">
-                <Link to="/dashboard" className="inline-flex items-center gap-3 text-slate-500 hover:text-white mb-16 transition-all group font-bold uppercase tracking-widest text-[10px]">
-                    <div className="p-2 bg-white/5 rounded-lg group-hover:bg-blue-600/10 transition-colors">
-                        <ChevronLeft size={16} />
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-16">
+                    <Link to="/dashboard" className="group">
+                        <Logo />
+                    </Link>
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle />
+                        <Link to="/dashboard" className="hidden md:inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all group font-bold uppercase tracking-widest text-[10px] py-2">
+                            <div className="p-2 bg-slate-200 dark:bg-white/5 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-600/10 transition-colors">
+                                <ChevronLeft size={16} />
+                            </div>
+                            Back to Workbench
+                        </Link>
                     </div>
-                    Back to Workbench
-                </Link>
+                </div>
 
-                <header className="flex flex-col xl:flex-row justify-between items-start gap-12 mb-24">
+                <header className="flex flex-col xl:flex-row justify-between items-start gap-8 lg:gap-12 mb-12 lg:mb-24">
                     <div className="space-y-6 max-w-4xl w-full">
-                        <div className="flex items-center gap-3 text-blue-500 font-black uppercase tracking-[0.4em] text-[10px]">
-                            <div className="w-8 h-px bg-blue-500" />
+                        <div className="flex items-center gap-3 text-blue-600 dark:text-blue-500 font-black uppercase tracking-[0.4em] text-[10px]">
+                            <div className="w-8 h-px bg-blue-600 dark:bg-blue-500" />
                             Project Intelligence
                         </div>
                         {isEditing ? (
@@ -376,39 +386,39 @@ export default function IdeaDetail() {
                                 <input
                                     value={editedTitle}
                                     onChange={e => setEditedTitle(e.target.value)}
-                                    className="w-full bg-white/[0.02] border border-white/[0.1] rounded-3xl px-8 py-4 text-4xl lg:text-6xl font-black text-white focus:outline-none focus:border-blue-500/50"
+                                    className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-3xl px-8 py-4 text-4xl lg:text-6xl font-black text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50"
                                 />
                                 <textarea
                                     value={editedDesc}
                                     onChange={e => setEditedDesc(e.target.value)}
                                     rows={4}
-                                    className="w-full bg-white/[0.02] border border-white/[0.1] rounded-3xl px-8 py-6 text-xl text-slate-400 focus:outline-none focus:border-blue-500/50 resize-none"
+                                    className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-3xl px-8 py-6 text-xl text-slate-600 dark:text-slate-400 focus:outline-none focus:border-blue-500/50 resize-none"
                                 />
                                 <div className="flex gap-4">
                                     <button onClick={handleUpdate} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20">
                                         <Save size={18} /> Save Progress
                                     </button>
-                                    <button onClick={() => setIsEditing(false)} className="bg-white/5 text-slate-400 px-8 py-3 rounded-2xl font-bold hover:bg-white/10 transition-all">
+                                    <button onClick={() => setIsEditing(false)} className="bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 px-8 py-3 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
                                         Cancel
                                     </button>
                                 </div>
                             </div>
                         ) : (
                             <div className="group relative">
-                                <h1 className="text-6xl lg:text-8xl 3xl:text-9xl font-black text-white tracking-tighter italic leading-none mb-6">
+                                <h1 className="text-4xl md:text-6xl lg:text-8xl 3xl:text-9xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-none mb-4 md:mb-6">
                                     {idea.title}<span className="text-blue-600">.</span>
                                 </h1>
-                                <p className="text-slate-400 text-xl lg:text-2xl font-medium leading-relaxed opacity-70 3xl:max-w-5xl mb-8">{idea.description}</p>
+                                <p className="text-slate-600 dark:text-slate-400 text-xl lg:text-2xl font-medium leading-relaxed opacity-70 3xl:max-w-5xl mb-8">{idea.description}</p>
                                 <div className="flex gap-4">
                                     <button
                                         onClick={() => setIsEditing(true)}
-                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all bg-white/5 px-6 py-3 rounded-full hover:bg-white/10"
+                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all bg-slate-100 dark:bg-white/5 px-6 py-3 rounded-full hover:bg-slate-200 dark:hover:bg-white/10"
                                     >
                                         <Edit3 size={14} /> Edit Spark
                                     </button>
                                     <button
                                         onClick={() => setChatOpen(true)}
-                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white transition-all bg-blue-600/10 px-6 py-3 rounded-full hover:bg-blue-600 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500/20"
+                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-white transition-all bg-blue-100 dark:bg-blue-600/10 px-6 py-3 rounded-full hover:bg-blue-600 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-200 dark:border-blue-500/20"
                                     >
                                         <MessageSquare size={14} /> Open Neural Studio
                                     </button>
@@ -421,7 +431,7 @@ export default function IdeaDetail() {
                         <button
                             onClick={() => handleForge(false)}
                             disabled={isForging}
-                            className="w-full xl:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-12 py-6 rounded-[2.5rem] font-black italic uppercase tracking-tighter text-2xl shadow-2xl shadow-blue-600/30 transition-all hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-4"
+                            className="w-full xl:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-8 py-4 md:px-12 md:py-6 rounded-[2rem] font-black italic uppercase tracking-tighter text-lg md:text-2xl shadow-2xl shadow-blue-600/30 transition-all hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-4"
                         >
                             {isForging ? <Loader2 className="animate-spin" /> : <Sparkles className="stroke-[2.5px]" />}
                             Initialize Forge
@@ -432,7 +442,7 @@ export default function IdeaDetail() {
                                 onClick={() => handleForge(true)}
                                 disabled={isForging}
                                 title="Force fresh market research and spec generation"
-                                className="px-6 py-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                className="px-6 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-2xl border border-slate-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
                             >
                                 {isForging ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                                 Redo Neural Research
@@ -449,20 +459,20 @@ export default function IdeaDetail() {
                             className="space-y-8"
                         >
                             {/* Tab Switcher */}
-                            <div className="flex gap-2 p-1 bg-white/5 w-fit rounded-2xl border border-white/10 mb-8">
+                            <div className="flex gap-2 p-1 bg-slate-200 dark:bg-white/5 w-full md:w-fit rounded-2xl border border-white/10 mb-8">
                                 <button
                                     onClick={() => setActiveTab('core')}
-                                    className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'core' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center ${activeTab === 'core' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-lg' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
                                 >
                                     Product Core
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('sparks')}
-                                    className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'sparks' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'sparks' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-lg' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
                                 >
                                     Smaller Sparks
                                     {idea.smallerSparks?.length > 0 && (
-                                        <span className="bg-blue-400 text-blue-950 px-1.5 py-0.5 rounded-md text-[8px]">
+                                        <span className="bg-blue-100 dark:bg-blue-400 text-blue-600 dark:text-blue-950 px-1.5 py-0.5 rounded-md text-[8px]">
                                             {idea.smallerSparks.length}
                                         </span>
                                     )}
@@ -470,14 +480,14 @@ export default function IdeaDetail() {
                             </div>
 
                             {activeTab === 'core' ? (
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                                     {/* Product Spec Card */}
                                     <div className="lg:col-span-12 xl:col-span-9 space-y-12">
-                                        <section className={`bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)]' : 'border-white/[0.05]'} p-12 rounded-[3.5rem] relative overflow-hidden group/spec`}>
+                                        <section className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)]' : 'border-slate-200 dark:border-white/[0.05]'} p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] relative overflow-hidden group/spec`}>
                                             <div className={`absolute top-0 right-0 w-64 h-64 ${isHighViability ? 'bg-yellow-500/10' : 'bg-blue-600/5'} blur-[80px]`} />
 
                                             <div className="flex justify-between items-start mb-10 relative z-10">
-                                                <h2 className="text-2xl font-black text-white flex items-center gap-4 italic uppercase tracking-tight">
+                                                <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-4 italic uppercase tracking-tight">
                                                     <div className={`p-3 ${isHighViability ? 'bg-yellow-500' : 'bg-blue-600'} rounded-2xl shadow-lg`}>
                                                         <ShieldCheck size={24} className="text-white" />
                                                     </div>
@@ -492,13 +502,13 @@ export default function IdeaDetail() {
                                                                 setEditingSection('coreSpec');
                                                             }
                                                         }}
-                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10"
+                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
                                                     >
                                                         <Edit3 size={12} /> {editingSection === 'coreSpec' ? 'Save' : 'Edit'}
                                                     </button>
                                                     <button
                                                         onClick={() => openChatWithContext('Core Specification')}
-                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white bg-blue-600/10 px-4 py-2 rounded-full border border-blue-500/20 hover:bg-blue-600"
+                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-white bg-blue-100 dark:bg-blue-600/10 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-600"
                                                     >
                                                         <MessageSquare size={12} /> Refine Spec
                                                     </button>
@@ -516,100 +526,100 @@ export default function IdeaDetail() {
                                                         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
                                                             <Target size={14} /> The Friction
                                                         </h3>
-                                                        <button onClick={() => openChatWithContext('Problem Statement')} className="p-1.5 hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Problem">
-                                                            <MessageSquare size={14} className="text-slate-500 hover:text-slate-300" />
+                                                        <button onClick={() => openChatWithContext('Problem Statement')} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Problem">
+                                                            <MessageSquare size={14} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Problem Statement', idea.forgeSpec.problem)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Problem Statement', idea.forgeSpec.problem)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={problemRef}
                                                                 defaultValue={idea.forgeSpec.problem}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-lg text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none"
                                                                 rows={3}
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-lg text-slate-300 leading-relaxed font-medium">{idea.forgeSpec.problem}</p>
+                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{idea.forgeSpec.problem}</p>
                                                     )}
                                                 </div>
-                                                <div className="space-y-4 p-8 bg-blue-600/5 rounded-3xl border border-blue-500/10">
+                                                <div className="space-y-4 p-8 bg-blue-50 dark:bg-blue-600/5 rounded-3xl border border-blue-100 dark:border-blue-500/10">
                                                     <div className="flex justify-between items-center">
-                                                        <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">The Solution</h3>
-                                                        <button onClick={() => openChatWithContext('Solution')} className="p-1.5 hover:bg-blue-600/20 rounded-lg transition-colors" title="Discuss Solution">
-                                                            <MessageSquare size={14} className="text-blue-400 hover:text-blue-300" />
+                                                        <h3 className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.3em]">The Solution</h3>
+                                                        <button onClick={() => openChatWithContext('Solution')} className="p-1.5 hover:bg-blue-100 dark:hover:bg-blue-600/20 rounded-lg transition-colors" title="Discuss Solution">
+                                                            <MessageSquare size={14} className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Solution', idea.forgeSpec.solution)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Solution', idea.forgeSpec.solution)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={solutionRef}
                                                                 defaultValue={idea.forgeSpec.solution}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-xl text-white focus:outline-none focus:border-blue-500/50 resize-none font-bold italic"
+                                                                className="w-full bg-white dark:bg-white/[0.02] border border-blue-100 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50 resize-none font-bold italic"
                                                                 rows={2}
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-xl text-white leading-relaxed font-bold italic">"{idea.forgeSpec.solution}"</p>
+                                                        <p className="text-xl text-slate-900 dark:text-white leading-relaxed font-bold italic">"{idea.forgeSpec.solution}"</p>
                                                     )}
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                                     <div className="space-y-4">
                                                         <div className="flex justify-between items-center">
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Target Segment</h3>
-                                                            <button onClick={() => openChatWithContext('Target Audience')} className="p-1.5 hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Target Audience">
-                                                                <MessageSquare size={14} className="text-slate-500 hover:text-slate-300" />
+                                                            <button onClick={() => openChatWithContext('Target Audience')} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Target Audience">
+                                                                <MessageSquare size={14} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300" />
                                                             </button>
                                                         </div>
                                                         {editingSection === 'coreSpec' ? (
                                                             <div className="space-y-2">
                                                                 <div className="flex justify-end">
-                                                                    <button onClick={() => openAiAssist('Target Audience', idea.forgeSpec.targetAudience)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                    <button onClick={() => openAiAssist('Target Audience', idea.forgeSpec.targetAudience)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                         <Wand2 size={12} /> AI Rewrite
                                                                     </button>
                                                                 </div>
                                                                 <input
                                                                     ref={audienceRef}
                                                                     defaultValue={idea.forgeSpec.targetAudience}
-                                                                    className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-3 text-lg text-slate-300 focus:outline-none focus:border-blue-500/50 font-bold"
+                                                                    className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-3 text-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 font-bold"
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <p className="text-lg text-slate-300 font-bold">{idea.forgeSpec.targetAudience}</p>
+                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{idea.forgeSpec.targetAudience}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-4">
                                                         <div className="flex justify-between items-center">
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Revenue Engine</h3>
-                                                            <button onClick={() => openChatWithContext('Revenue Model')} className="p-1.5 hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Revenue Model">
-                                                                <MessageSquare size={14} className="text-slate-500 hover:text-slate-300" />
+                                                            <button onClick={() => openChatWithContext('Revenue Model')} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700/20 rounded-lg transition-colors" title="Discuss Revenue Model">
+                                                                <MessageSquare size={14} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300" />
                                                             </button>
                                                         </div>
                                                         {editingSection === 'coreSpec' ? (
                                                             <div className="space-y-2">
                                                                 <div className="flex justify-end">
-                                                                    <button onClick={() => openAiAssist('Revenue Model', idea.forgeSpec.revenueModel)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                    <button onClick={() => openAiAssist('Revenue Model', idea.forgeSpec.revenueModel)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                         <Wand2 size={12} /> AI Rewrite
                                                                     </button>
                                                                 </div>
                                                                 <input
                                                                     ref={revenueRef}
                                                                     defaultValue={idea.forgeSpec.revenueModel}
-                                                                    className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-3 text-lg text-slate-300 focus:outline-none focus:border-blue-500/50 font-bold"
+                                                                    className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-3 text-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 font-bold"
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <p className="text-lg text-slate-300 font-bold">{idea.forgeSpec.revenueModel}</p>
+                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{idea.forgeSpec.revenueModel}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -619,139 +629,139 @@ export default function IdeaDetail() {
                                         {/* PRODUCT EXPANSIONS */}
                                         {idea.forgeSpec.expansions && (
                                             <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <div className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-blue-500/20 transition-all group/exp relative">
+                                                <div className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-blue-500/20 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-blue-600/10 rounded-xl text-blue-400 group-hover/exp:bg-blue-600 group-hover/exp:text-white transition-all">
+                                                            <div className="p-2 bg-blue-100 dark:bg-blue-600/10 rounded-xl text-blue-600 dark:text-blue-400 group-hover/exp:bg-blue-600 group-hover/exp:text-white transition-all">
                                                                 <Workflow size={18} />
                                                             </div>
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Creative Flow</h3>
                                                         </div>
                                                         <button
                                                             onClick={() => setEditingSection('coreSpec')}
-                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-all"
                                                             title="Edit Expansions"
                                                         >
-                                                            <Edit3 size={14} className="text-slate-500 hover:text-white" />
+                                                            <Edit3 size={14} className="text-slate-500 hover:text-slate-900 dark:hover:text-white" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Creative Flow', idea.forgeSpec.expansions.creativeFlow)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Creative Flow', idea.forgeSpec.expansions.creativeFlow)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={creativeFlowRef}
                                                                 defaultValue={idea.forgeSpec.expansions.creativeFlow}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-32"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-32"
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.creativeFlow}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.creativeFlow}</p>
                                                     )}
                                                 </div>
 
-                                                <div className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-purple-500/20 transition-all group/exp relative">
+                                                <div className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-purple-500/20 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-purple-600/10 rounded-xl text-purple-400 group-hover/exp:bg-purple-600 group-hover/exp:text-white transition-all">
+                                                            <div className="p-2 bg-purple-100 dark:bg-purple-600/10 rounded-xl text-purple-600 dark:text-purple-400 group-hover/exp:bg-purple-600 group-hover/exp:text-white transition-all">
                                                                 <Cpu size={18} />
                                                             </div>
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Tech Stack</h3>
                                                         </div>
                                                         <button
                                                             onClick={() => setEditingSection('coreSpec')}
-                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-all"
                                                             title="Edit Expansions"
                                                         >
-                                                            <Edit3 size={14} className="text-slate-500 hover:text-white" />
+                                                            <Edit3 size={14} className="text-slate-500 hover:text-slate-900 dark:hover:text-white" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Tech Stack', idea.forgeSpec.expansions.techStack)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Tech Stack', idea.forgeSpec.expansions.techStack)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={techStackRef}
                                                                 defaultValue={idea.forgeSpec.expansions.techStack}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-purple-500/50 resize-none h-32"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-purple-500/50 resize-none h-32"
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.techStack}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.techStack}</p>
                                                     )}
                                                 </div>
 
-                                                <div className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-orange-500/20 transition-all group/exp relative">
+                                                <div className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-orange-500/20 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-orange-600/10 rounded-xl text-orange-400 group-hover/exp:bg-orange-600 group-hover/exp:text-white transition-all">
+                                                            <div className="p-2 bg-orange-100 dark:bg-orange-600/10 rounded-xl text-orange-600 dark:text-orange-400 group-hover/exp:bg-orange-600 group-hover/exp:text-white transition-all">
                                                                 <Rocket size={18} />
                                                             </div>
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Growth Levers</h3>
                                                         </div>
                                                         <button
                                                             onClick={() => setEditingSection('coreSpec')}
-                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-all"
                                                             title="Edit Expansions"
                                                         >
-                                                            <Edit3 size={14} className="text-slate-500 hover:text-white" />
+                                                            <Edit3 size={14} className="text-slate-500 hover:text-slate-900 dark:hover:text-white" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Growth Levers', idea.forgeSpec.expansions.growthLevers)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Growth Levers', idea.forgeSpec.expansions.growthLevers)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={growthLeversRef}
                                                                 defaultValue={idea.forgeSpec.expansions.growthLevers}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-orange-500/50 resize-none h-32"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500/50 resize-none h-32"
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.growthLevers}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.growthLevers}</p>
                                                     )}
                                                 </div>
 
-                                                <div className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-green-500/20 transition-all group/exp relative">
+                                                <div className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem] space-y-4 hover:border-green-500/20 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-green-600/10 rounded-xl text-green-400 group-hover/exp:bg-green-600 group-hover/exp:text-white transition-all">
+                                                            <div className="p-2 bg-green-100 dark:bg-green-600/10 rounded-xl text-green-600 dark:text-green-400 group-hover/exp:bg-green-600 group-hover/exp:text-white transition-all">
                                                                 <DollarSign size={18} />
                                                             </div>
                                                             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Unit Economics</h3>
                                                         </div>
                                                         <button
                                                             onClick={() => setEditingSection('coreSpec')}
-                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-all"
                                                             title="Edit Expansions"
                                                         >
-                                                            <Edit3 size={14} className="text-slate-500 hover:text-white" />
+                                                            <Edit3 size={14} className="text-slate-500 hover:text-slate-900 dark:hover:text-white" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-2">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Unit Economics', idea.forgeSpec.expansions.unitEconomics)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Unit Economics', idea.forgeSpec.expansions.unitEconomics)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
                                                             <textarea
                                                                 ref={unitEconomicsRef}
                                                                 defaultValue={idea.forgeSpec.expansions.unitEconomics}
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-green-500/50 resize-none h-32"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-green-500/50 resize-none h-32"
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.unitEconomics}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.unitEconomics}</p>
                                                     )}
                                                 </div>
 
@@ -759,23 +769,23 @@ export default function IdeaDetail() {
                                                 <div className="md:col-span-2 bg-gradient-to-br from-blue-600/5 to-purple-600/5 border border-blue-500/10 p-12 rounded-[3.5rem] space-y-4 hover:border-blue-500/30 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-blue-600/20 rounded-xl text-blue-400 group-hover/exp:bg-blue-600 group-hover/exp:text-white transition-all">
+                                                            <div className="p-2 bg-blue-100 dark:bg-blue-600/20 rounded-xl text-blue-600 dark:text-blue-400 group-hover/exp:bg-blue-600 group-hover/exp:text-white transition-all">
                                                                 <Edit3 size={18} />
                                                             </div>
-                                                            <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Neural Notes (AI Priority Context)</h3>
+                                                            <h3 className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em]">Neural Notes (AI Priority Context)</h3>
                                                         </div>
                                                         <button
                                                             onClick={() => setEditingSection('coreSpec')}
-                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                            className="opacity-0 group-hover/exp:opacity-100 p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-all"
                                                             title="Edit Notes"
                                                         >
-                                                            <Edit3 size={14} className="text-slate-500 hover:text-white" />
+                                                            <Edit3 size={14} className="text-slate-500 hover:text-slate-900 dark:hover:text-white" />
                                                         </button>
                                                     </div>
                                                     {editingSection === 'coreSpec' ? (
                                                         <div className="space-y-4">
                                                             <div className="flex justify-end">
-                                                                <button onClick={() => openAiAssist('Neural Notes', idea.forgeSpec.expansions.notes || '')} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors">
+                                                                <button onClick={() => openAiAssist('Neural Notes', idea.forgeSpec.expansions.notes || '')} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-white transition-colors">
                                                                     <Wand2 size={12} /> AI Rewrite
                                                                 </button>
                                                             </div>
@@ -783,7 +793,7 @@ export default function IdeaDetail() {
                                                                 ref={notesRef}
                                                                 defaultValue={idea.forgeSpec.expansions.notes || ''}
                                                                 placeholder="Add specific directives or constraints here. PRO TIP: Reference 'Named Sparks' (e.g. '@Pivot to Mobile') to prioritize specific captured insights in the AI's evolution strategy. This section is the Neural Priority Layer."
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-40"
+                                                                className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-40"
                                                             />
                                                             {idea.smallerSparks && idea.smallerSparks.length > 0 && (
                                                                 <div className="space-y-2">
@@ -803,7 +813,7 @@ export default function IdeaDetail() {
                                                                                         notesRef.current.focus();
                                                                                     }
                                                                                 }}
-                                                                                className="px-3 py-1 bg-blue-600/10 border border-blue-500/20 rounded-lg text-[10px] font-bold text-blue-400 hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
+                                                                                className="px-3 py-1 bg-blue-100 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
                                                                             >
                                                                                 <Zap size={10} />
                                                                                 {s.title || 'Untitled Spark'}
@@ -815,10 +825,10 @@ export default function IdeaDetail() {
                                                         </div>
                                                     ) : (
                                                         <div className="space-y-2">
-                                                            <p className="text-slate-300 text-sm leading-relaxed italic">
+                                                            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed italic">
                                                                 {idea.forgeSpec.expansions.notes || "No specific directives yet. Click the pen to add notes that will guide Venty's evolution analysis."}
                                                             </p>
-                                                            <div className="flex items-center gap-2 text-[8px] font-bold text-blue-500/50 uppercase tracking-widest">
+                                                            <div className="flex items-center gap-2 text-[8px] font-bold text-blue-600/50 dark:text-blue-500/50 uppercase tracking-widest">
                                                                 <ShieldCheck size={10} /> Priority Instruction Layer Active
                                                             </div>
                                                         </div>
@@ -844,39 +854,39 @@ export default function IdeaDetail() {
                                             <div className="space-y-8">
                                                 {/* Header */}
                                                 <div className="text-center space-y-4 py-12">
-                                                    <h2 className="text-4xl font-black text-white italic tracking-tight">Investor Deep Dive</h2>
-                                                    <p className="text-slate-500 text-sm uppercase tracking-[0.3em] font-bold">Comprehensive Product Requirements Document</p>
+                                                    <h2 className="text-4xl font-black text-slate-900 dark:text-white italic tracking-tight">Investor Deep Dive</h2>
+                                                    <p className="text-slate-500 dark:text-slate-400 text-sm uppercase tracking-[0.3em] font-bold">Comprehensive Product Requirements Document</p>
                                                 </div>
 
                                                 {/* 1. Executive Summary */}
-                                                <section className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-blue-500/20 p-12 rounded-[3.5rem] relative overflow-hidden">
-                                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[100px]" />
+                                                <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-600/10 dark:to-purple-600/10 border border-blue-200 dark:border-blue-500/20 p-12 rounded-[3.5rem] relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/10 blur-[100px]" />
                                                     <div className="relative z-10">
                                                         <div className="flex justify-between items-center mb-6">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black">1</div>
                                                                 Executive Summary
                                                             </h3>
                                                             <button
                                                                 onClick={() => openChatWithContext('Executive Summary')}
-                                                                className="p-2 hover:bg-blue-600/20 rounded-xl transition-colors"
+                                                                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-600/20 rounded-xl transition-colors"
                                                                 title="Discuss Executive Summary"
                                                             >
-                                                                <MessageSquare size={20} className="text-blue-400" />
+                                                                <MessageSquare size={20} className="text-blue-500 dark:text-blue-400" />
                                                             </button>
                                                         </div>
-                                                        <p className="text-lg text-slate-300 leading-relaxed">{idea.deepDive.executiveSummary}</p>
+                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">{idea.deepDive.executiveSummary}</p>
                                                     </div>
                                                 </section>
 
                                                 {/* 2. Problem Analysis */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button
                                                             onClick={() => toggleDeepDiveSection('problem')}
                                                             className="flex items-center gap-3 flex-1"
                                                         >
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center text-white font-black">2</div>
                                                                 Problem Analysis
                                                             </h3>
@@ -884,10 +894,10 @@ export default function IdeaDetail() {
                                                         <div className="flex items-center gap-2">
                                                             <button
                                                                 onClick={() => openChatWithContext('Problem Analysis')}
-                                                                className="p-2 hover:bg-red-600/20 rounded-xl transition-colors"
+                                                                className="p-2 hover:bg-red-100 dark:hover:bg-red-600/20 rounded-xl transition-colors"
                                                                 title="Discuss Problem Analysis"
                                                             >
-                                                                <MessageSquare size={18} className="text-red-400" />
+                                                                <MessageSquare size={18} className="text-red-500 dark:text-red-400" />
                                                             </button>
                                                             <button
                                                                 onClick={() => toggleDeepDiveSection('problem')}
@@ -901,16 +911,16 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('problem') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Problem Statement</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.statement}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Problem Statement</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.statement}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Market Evidence</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.evidence}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Market Evidence</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.evidence}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Why Now</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.urgency}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Why Now</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.urgency}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -918,17 +928,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 3. Solution Architecture */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('solution')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-green-600 rounded-2xl flex items-center justify-center text-white font-black">3</div>
                                                                 Solution Architecture
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Solution Architecture')} className="p-2 hover:bg-green-600/20 rounded-xl transition-colors" title="Discuss Solution Architecture">
-                                                                <MessageSquare size={18} className="text-green-400" />
+                                                            <button onClick={() => openChatWithContext('Solution Architecture')} className="p-2 hover:bg-green-100 dark:hover:bg-green-600/20 rounded-xl transition-colors" title="Discuss Solution Architecture">
+                                                                <MessageSquare size={18} className="text-green-500 dark:text-green-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('solution')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('solution') ? 'rotate-90' : '-rotate-90'}`} />
@@ -939,25 +949,25 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('solution') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Value Proposition</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.valueProposition}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Value Proposition</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.valueProposition}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Key Features</h4>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Key Features</h4>
                                                                     <ul className="space-y-2">
                                                                         {idea.deepDive.solutionArchitecture.keyFeatures.map((feature: string, i: number) => (
                                                                             <li key={i} className="flex items-start gap-3">
-                                                                                <div className="w-6 h-6 bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                                <div className="w-6 h-6 bg-green-100 dark:bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                                                                     <div className="w-2 h-2 bg-green-500 rounded-full" />
                                                                                 </div>
-                                                                                <span className="text-slate-300">{feature}</span>
+                                                                                <span className="text-slate-600 dark:text-slate-300">{feature}</span>
                                                                             </li>
                                                                         ))}
                                                                     </ul>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Technical Approach</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.technicalApproach}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Technical Approach</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.technicalApproach}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -965,17 +975,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 4. Market Opportunity */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('market')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-yellow-600 rounded-2xl flex items-center justify-center text-white font-black">4</div>
                                                                 Market Opportunity
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Market Opportunity')} className="p-2 hover:bg-yellow-600/20 rounded-xl transition-colors" title="Discuss Market Opportunity">
-                                                                <MessageSquare size={18} className="text-yellow-400" />
+                                                            <button onClick={() => openChatWithContext('Market Opportunity')} className="p-2 hover:bg-yellow-100 dark:hover:bg-yellow-600/20 rounded-xl transition-colors" title="Discuss Market Opportunity">
+                                                                <MessageSquare size={18} className="text-yellow-600 dark:text-yellow-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('market')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('market') ? 'rotate-90' : '-rotate-90'}`} />
@@ -986,22 +996,22 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('market') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                                    <div className="p-6 bg-yellow-600/10 border border-yellow-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-3">TAM</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.tam}</p>
+                                                                    <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">TAM</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.tam}</p>
                                                                     </div>
-                                                                    <div className="p-6 bg-yellow-600/10 border border-yellow-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-3">SAM</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.sam}</p>
+                                                                    <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">SAM</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.sam}</p>
                                                                     </div>
-                                                                    <div className="p-6 bg-yellow-600/10 border border-yellow-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-yellow-500 uppercase tracking-[0.3em] mb-3">SOM</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.som}</p>
+                                                                    <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">SOM</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.som}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Market Trends</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.marketOpportunity.trends}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Market Trends</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.marketOpportunity.trends}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1009,17 +1019,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 5. Competitive Landscape */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('competitive')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white font-black">5</div>
                                                                 Competitive Landscape
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Competitive Landscape')} className="p-2 hover:bg-purple-600/20 rounded-xl transition-colors" title="Discuss Competitive Landscape">
-                                                                <MessageSquare size={18} className="text-purple-400" />
+                                                            <button onClick={() => openChatWithContext('Competitive Landscape')} className="p-2 hover:bg-purple-100 dark:hover:bg-purple-600/20 rounded-xl transition-colors" title="Discuss Competitive Landscape">
+                                                                <MessageSquare size={18} className="text-purple-600 dark:text-purple-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('competitive')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('competitive') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1030,20 +1040,20 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('competitive') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Direct Competitors</h4>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Direct Competitors</h4>
                                                                     <div className="flex flex-wrap gap-3">
                                                                         {idea.deepDive.competitiveLandscape.directCompetitors.map((comp: string, i: number) => (
-                                                                            <span key={i} className="px-4 py-2 bg-purple-600/10 border border-purple-500/20 rounded-xl text-sm font-bold text-purple-400">{comp}</span>
+                                                                            <span key={i} className="px-4 py-2 bg-purple-50 dark:bg-purple-600/10 border border-purple-200 dark:border-purple-500/20 rounded-xl text-sm font-bold text-purple-600 dark:text-purple-400">{comp}</span>
                                                                         ))}
                                                                     </div>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Competitive Advantage</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.advantage}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Competitive Advantage</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.advantage}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Moat & Defensibility</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.moat}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Moat & Defensibility</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.moat}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1051,17 +1061,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 6. Business Model */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('business')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-black">6</div>
                                                                 Business Model
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Business Model')} className="p-2 hover:bg-emerald-600/20 rounded-xl transition-colors" title="Discuss Business Model">
-                                                                <MessageSquare size={18} className="text-emerald-400" />
+                                                            <button onClick={() => openChatWithContext('Business Model')} className="p-2 hover:bg-emerald-100 dark:hover:bg-emerald-600/20 rounded-xl transition-colors" title="Discuss Business Model">
+                                                                <MessageSquare size={18} className="text-emerald-600 dark:text-emerald-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('business')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('business') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1072,16 +1082,16 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('business') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Revenue Streams</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.businessModel.revenueStreams}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Revenue Streams</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.revenueStreams}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Pricing Strategy</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.businessModel.pricing}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Pricing Strategy</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.pricing}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Unit Economics</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.businessModel.unitEconomics}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Unit Economics</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.unitEconomics}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1089,17 +1099,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 7. Go-to-Market */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('gtm')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-cyan-600 rounded-2xl flex items-center justify-center text-white font-black">7</div>
                                                                 Go-to-Market Strategy
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Go-to-Market Strategy')} className="p-2 hover:bg-cyan-600/20 rounded-xl transition-colors" title="Discuss Go-to-Market Strategy">
-                                                                <MessageSquare size={18} className="text-cyan-400" />
+                                                            <button onClick={() => openChatWithContext('Go-to-Market Strategy')} className="p-2 hover:bg-cyan-100 dark:hover:bg-cyan-600/20 rounded-xl transition-colors" title="Discuss Go-to-Market Strategy">
+                                                                <MessageSquare size={18} className="text-cyan-600 dark:text-cyan-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('gtm')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('gtm') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1110,16 +1120,16 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('gtm') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Target Segments</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.segments}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Target Segments</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.segments}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Distribution Channels</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.channels}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Distribution Channels</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.channels}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Launch Strategy</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.strategy}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Launch Strategy</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.goToMarket.strategy}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1127,17 +1137,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 8. Financial Projections */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('financial')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-orange-600 rounded-2xl flex items-center justify-center text-white font-black">8</div>
                                                                 Financial Projections
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Financial Projections')} className="p-2 hover:bg-orange-600/20 rounded-xl transition-colors" title="Discuss Financial Projections">
-                                                                <MessageSquare size={18} className="text-orange-400" />
+                                                            <button onClick={() => openChatWithContext('Financial Projections')} className="p-2 hover:bg-orange-100 dark:hover:bg-orange-600/20 rounded-xl transition-colors" title="Discuss Financial Projections">
+                                                                <MessageSquare size={18} className="text-orange-600 dark:text-orange-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('financial')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('financial') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1148,22 +1158,22 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('financial') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                                    <div className="p-6 bg-orange-600/10 border border-orange-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-orange-500 uppercase tracking-[0.3em] mb-3">Year 1</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year1}</p>
+                                                                    <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 1</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year1}</p>
                                                                     </div>
-                                                                    <div className="p-6 bg-orange-600/10 border border-orange-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-orange-500 uppercase tracking-[0.3em] mb-3">Year 2</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year2}</p>
+                                                                    <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 2</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year2}</p>
                                                                     </div>
-                                                                    <div className="p-6 bg-orange-600/10 border border-orange-500/20 rounded-2xl">
-                                                                        <h4 className="text-xs font-black text-orange-500 uppercase tracking-[0.3em] mb-3">Year 3</h4>
-                                                                        <p className="text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year3}</p>
+                                                                    <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
+                                                                        <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 3</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year3}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Path to Profitability</h4>
-                                                                    <p className="text-slate-300 leading-relaxed">{idea.deepDive.financialProjections.breakeven}</p>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Path to Profitability</h4>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.financialProjections.breakeven}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1171,17 +1181,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 9. Risk Assessment */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('risks')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center text-white font-black">9</div>
                                                                 Risk Assessment
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Risk Assessment')} className="p-2 hover:bg-red-600/20 rounded-xl transition-colors" title="Discuss Risk Assessment">
-                                                                <MessageSquare size={18} className="text-red-400" />
+                                                            <button onClick={() => openChatWithContext('Risk Assessment')} className="p-2 hover:bg-red-100 dark:hover:bg-red-600/20 rounded-xl transition-colors" title="Discuss Risk Assessment">
+                                                                <MessageSquare size={18} className="text-red-600 dark:text-red-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('risks')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('risks') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1192,9 +1202,9 @@ export default function IdeaDetail() {
                                                         {expandedDeepDiveSections.has('risks') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
                                                                 {idea.deepDive.riskAssessment.risks.map((risk: any, i: number) => (
-                                                                    <div key={i} className="p-6 bg-red-600/5 border border-red-500/10 rounded-2xl">
-                                                                        <h4 className="text-sm font-black text-red-400 mb-2">{risk.risk}</h4>
-                                                                        <p className="text-slate-400 text-sm leading-relaxed"><span className="text-green-500 font-bold">Mitigation:</span> {risk.mitigation}</p>
+                                                                    <div key={i} className="p-6 bg-red-50 dark:bg-red-600/5 border border-red-200 dark:border-red-500/10 rounded-2xl">
+                                                                        <h4 className="text-sm font-black text-red-600 dark:text-red-400 mb-2">{risk.risk}</h4>
+                                                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed"><span className="text-green-600 dark:text-green-500 font-bold">Mitigation:</span> {risk.mitigation}</p>
                                                                     </div>
                                                                 ))}
                                                             </motion.div>
@@ -1203,17 +1213,17 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 10. Success Metrics */}
-                                                <section className="bg-white/[0.02] border border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('metrics')} className="flex items-center gap-3 flex-1">
-                                                            <h3 className="text-2xl font-black text-white flex items-center gap-3">
+                                                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                                                 <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black">10</div>
                                                                 Success Metrics
                                                             </h3>
                                                         </button>
                                                         <div className="flex items-center gap-2">
-                                                            <button onClick={() => openChatWithContext('Success Metrics')} className="p-2 hover:bg-indigo-600/20 rounded-xl transition-colors" title="Discuss Success Metrics">
-                                                                <MessageSquare size={18} className="text-indigo-400" />
+                                                            <button onClick={() => openChatWithContext('Success Metrics')} className="p-2 hover:bg-indigo-100 dark:hover:bg-indigo-600/20 rounded-xl transition-colors" title="Discuss Success Metrics">
+                                                                <MessageSquare size={18} className="text-indigo-600 dark:text-indigo-400" />
                                                             </button>
                                                             <button onClick={() => toggleDeepDiveSection('metrics')} className="p-2">
                                                                 <ChevronLeft size={24} className={`text-slate-500 transition-transform ${expandedDeepDiveSections.has('metrics') ? 'rotate-90' : '-rotate-90'}`} />
@@ -1223,19 +1233,19 @@ export default function IdeaDetail() {
                                                     <AnimatePresence>
                                                         {expandedDeepDiveSections.has('metrics') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
-                                                                <div className="p-6 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl">
-                                                                    <h4 className="text-xs font-black text-indigo-500 uppercase tracking-[0.3em] mb-3">North Star Metric</h4>
-                                                                    <p className="text-white text-lg font-bold">{idea.deepDive.successMetrics.northStar}</p>
+                                                                <div className="p-6 bg-indigo-50 dark:bg-indigo-600/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl">
+                                                                    <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-500 uppercase tracking-[0.3em] mb-3">North Star Metric</h4>
+                                                                    <p className="text-slate-900 dark:text-white text-lg font-bold">{idea.deepDive.successMetrics.northStar}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Key Performance Indicators</h4>
+                                                                    <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Key Performance Indicators</h4>
                                                                     <ul className="space-y-3">
                                                                         {idea.deepDive.successMetrics.kpis.map((kpi: string, i: number) => (
                                                                             <li key={i} className="flex items-start gap-3">
-                                                                                <div className="w-6 h-6 bg-indigo-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                                                    <TrendingUp size={14} className="text-indigo-500" />
+                                                                                <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                                    <TrendingUp size={14} className="text-indigo-600 dark:text-indigo-500" />
                                                                                 </div>
-                                                                                <span className="text-slate-300">{kpi}</span>
+                                                                                <span className="text-slate-600 dark:text-slate-300">{kpi}</span>
                                                                             </li>
                                                                         ))}
                                                                     </ul>
@@ -1249,27 +1259,27 @@ export default function IdeaDetail() {
 
                                         {/* Show old sections only if no deepDive yet (legacy support) */}
                                         {!idea.deepDive && idea.forgeSpec.description && (
-                                            <section className="bg-white/[0.01] border border-white/[0.03] p-12 rounded-[3.5rem] group/solution">
+                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-12 rounded-[3.5rem] group/solution">
                                                 <div className="flex justify-between items-center mb-8">
-                                                    <h2 className="text-xs font-black text-slate-500 uppercase tracking-[0.5em]">Solution Deep Dive</h2>
+                                                    <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.5em]">Solution Deep Dive</h2>
                                                     <button
                                                         onClick={() => openChatWithContext('Solution')}
-                                                        className="opacity-60 group-hover/solution:opacity-100 transition-opacity text-blue-400 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                                        className="opacity-60 group-hover/solution:opacity-100 transition-opacity text-blue-600 dark:text-blue-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
                                                     >
                                                         <Edit3 size={12} /> Refine
                                                     </button>
                                                 </div>
                                                 <div className={`${!showFullSolution ? 'max-h-32 overflow-hidden relative' : ''}`}>
-                                                    <p className="text-2xl text-slate-400 font-medium leading-normal italic opacity-80">
+                                                    <p className="text-2xl text-slate-600 dark:text-slate-400 font-medium leading-normal italic opacity-80">
                                                         {idea.forgeSpec.description}
                                                     </p>
                                                     {!showFullSolution && (
-                                                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#010409] to-transparent" />
+                                                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-[#010409] to-transparent" />
                                                     )}
                                                 </div>
                                                 <button
                                                     onClick={() => setShowFullSolution(!showFullSolution)}
-                                                    className="mt-6 text-blue-500 hover:text-white text-sm font-bold flex items-center gap-2 transition-colors"
+                                                    className="mt-6 text-blue-600 dark:text-blue-500 hover:text-slate-900 dark:hover:text-white text-sm font-bold flex items-center gap-2 transition-colors"
                                                 >
                                                     {showFullSolution ? 'Show Less' : 'Expand Full Analysis'}
                                                     <ChevronLeft size={16} className={`transform transition-transform ${showFullSolution ? 'rotate-90' : '-rotate-90'}`} />
@@ -1278,34 +1288,34 @@ export default function IdeaDetail() {
                                         )}
 
                                         {idea.marketResearch && (
-                                            <section className="bg-white/[0.01] border border-white/[0.03] p-12 rounded-[3.5rem] grid grid-cols-1 md:grid-cols-2 gap-12 group/market">
+                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-12 rounded-[3.5rem] grid grid-cols-1 md:grid-cols-2 gap-12 group/market">
                                                 <div className="space-y-6">
                                                     <div className="flex justify-between items-center">
-                                                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] flex items-center gap-2">
+                                                        <h3 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.5em] flex items-center gap-2">
                                                             <Search size={14} /> Competitive Intel
                                                         </h3>
                                                         <button
                                                             onClick={() => openChatWithContext('Competitive Intel')}
-                                                            className="opacity-60 group-hover/market:opacity-100 transition-opacity text-blue-400 hover:text-white"
+                                                            className="opacity-60 group-hover/market:opacity-100 transition-opacity text-blue-600 dark:text-blue-400 hover:text-slate-900 dark:hover:text-white"
                                                         >
                                                             <MessageSquare size={14} />
                                                         </button>
                                                     </div>
                                                     <div className="flex flex-wrap gap-3">
                                                         {idea.marketResearch.competitors.map((c: string, i: number) => (
-                                                            <span key={i} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-slate-400 capitalize hover:text-white hover:border-blue-500/30 transition-all cursor-default">
+                                                            <span key={i} className="px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 capitalize hover:text-slate-900 dark:hover:text-white hover:border-blue-500/30 transition-all cursor-default">
                                                                 {c}
                                                             </span>
                                                         ))}
                                                     </div>
                                                 </div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] flex items-center gap-2">
+                                                    <h3 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.5em] flex items-center gap-2">
                                                         <TrendingUp size={14} /> Market Trends
                                                     </h3>
                                                     <div className="flex flex-wrap gap-3">
                                                         {idea.marketResearch.trends.map((t: string, i: number) => (
-                                                            <span key={i} className="px-4 py-2 bg-blue-500/5 border border-blue-500/10 rounded-xl text-sm font-bold text-blue-400 hover:text-blue-300 transition-all cursor-default">
+                                                            <span key={i} className="px-4 py-2 bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 rounded-xl text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-all cursor-default">
                                                                 # {t}
                                                             </span>
                                                         ))}
@@ -1315,10 +1325,10 @@ export default function IdeaDetail() {
                                         )}
 
                                         {idea.roadmap && (
-                                            <section className="bg-gradient-to-br from-[#0a0c10] to-[#010409] p-12 lg:p-20 rounded-[4rem] border border-white/[0.03] relative overflow-hidden min-h-[600px] flex flex-col items-center group/roadmap">
+                                            <section className="bg-gradient-to-br from-white to-slate-50 dark:from-[#0a0c10] dark:to-[#010409] p-12 lg:p-20 rounded-[4rem] border border-slate-200 dark:border-white/[0.03] relative overflow-hidden min-h-[600px] flex flex-col items-center group/roadmap">
                                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.05),transparent_70%)]" />
 
-                                                <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.6em] mb-24 flex items-center justify-center gap-4 text-center relative z-10">
+                                                <h2 className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.6em] mb-24 flex items-center justify-center gap-4 text-center relative z-10">
                                                     <div className="w-12 h-px bg-blue-500/20" />
                                                     Evolution Atlas
                                                     <div className="w-12 h-px bg-blue-500/20" />
@@ -1326,7 +1336,7 @@ export default function IdeaDetail() {
 
                                                 <button
                                                     onClick={() => openChatWithContext('Evolution Roadmap')}
-                                                    className="absolute top-12 right-12 opacity-60 group-hover/roadmap:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white bg-blue-600/10 px-4 py-2 rounded-full border border-blue-500/20 hover:bg-blue-600 z-50"
+                                                    className="absolute top-12 right-12 opacity-60 group-hover/roadmap:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-slate-900 dark:hover:text-white bg-blue-50 dark:bg-blue-600/10 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-600 z-50"
                                                 >
                                                     <MessageSquare size={12} /> Discuss Strategy
                                                 </button>
@@ -1334,7 +1344,7 @@ export default function IdeaDetail() {
                                                 {/* Mind Map Structure */}
                                                 <div className="relative w-full max-w-5xl h-[400px] flex items-center justify-center relative z-10">
                                                     {/* SVG Connections */}
-                                                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+                                                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-20">
                                                         <defs>
                                                             <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                                 <stop offset="0%" stopColor="#2563eb" stopOpacity="0" />
@@ -1357,7 +1367,7 @@ export default function IdeaDetail() {
                                                                 {/* The Node */}
                                                                 <button
                                                                     onClick={() => setActivePhase(item)}
-                                                                    className="w-20 h-20 rounded-full bg-[#0a0c10] border-2 border-white/5 flex items-center justify-center text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-white"
+                                                                    className="w-20 h-20 rounded-full bg-white dark:bg-[#0a0c10] border-2 border-slate-100 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-blue-700 dark:group-hover:text-white"
                                                                 >
                                                                     <div className="absolute inset-0 rounded-full bg-blue-600/5 scale-0 group-hover:scale-150 transition-transform duration-700 blur-xl" />
                                                                     <span className="text-xl font-black italic">{i + 1}</span>
@@ -1370,10 +1380,10 @@ export default function IdeaDetail() {
                                                                         animate={{ opacity: 1, y: 0 }}
                                                                         className="mt-6 text-center absolute top-24 left-1/2 -translate-x-1/2 w-48 z-30 pointer-events-none"
                                                                     >
-                                                                        <div className="text-[8px] font-black text-blue-500 tracking-[0.3em] uppercase mb-2 bg-[#0a0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-blue-500/20 inline-block">
+                                                                        <div className="text-[8px] font-black text-blue-600 dark:text-blue-500 tracking-[0.3em] uppercase mb-2 bg-white/80 dark:bg-[#0a0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-blue-200 dark:border-blue-500/20 inline-block">
                                                                             {item.phase}
                                                                         </div>
-                                                                        <div className="text-xs font-bold text-white bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-xl leading-tight">
+                                                                        <div className="text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-xl leading-tight">
                                                                             {item.task}
                                                                         </div>
                                                                     </motion.div>
@@ -1388,7 +1398,7 @@ export default function IdeaDetail() {
                                                     </div>
                                                 </div>
 
-                                                <p className="mt-20 text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Click any sector to expand intelligence</p>
+                                                <p className="mt-20 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">Click any sector to expand intelligence</p>
                                             </section>
                                         )}
                                     </div>
@@ -1397,12 +1407,12 @@ export default function IdeaDetail() {
                                     <div className="lg:col-span-12 xl:col-span-3 space-y-12">
 
 
-                                        <div className={`bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/40 shadow-[0_0_50px_rgba(234,179,8,0.15)]' : 'border-white/[0.05]'} p-12 rounded-[3.5rem] flex flex-col items-center text-center relative overflow-hidden`}>
+                                        <div className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/40 shadow-[0_0_50px_rgba(234,179,8,0.15)] theme-transition' : 'border-slate-200 dark:border-white/[0.05]'} p-12 rounded-[3.5rem] flex flex-col items-center text-center relative overflow-hidden`}>
                                             {isHighViability && <div className="absolute inset-0 bg-yellow-500/5 animate-pulse" />}
-                                            <h2 className="text-xs font-black text-slate-500 uppercase tracking-[0.4em] mb-10 relative z-10">Viability Index</h2>
+                                            <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.4em] mb-10 relative z-10">Viability Index</h2>
                                             <div className="relative w-56 h-56 flex items-center justify-center z-10">
                                                 <svg className="w-full h-full transform -rotate-90">
-                                                    <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-white/[0.02]" />
+                                                    <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-200 dark:text-white/[0.02]" />
                                                     <circle cx="112" cy="112" r="100" stroke="currentColor" strokeWidth="12" fill="transparent"
                                                         strokeDasharray={628}
                                                         strokeDashoffset={628 - (628 * (idea.score || 0)) / 100}
@@ -1410,7 +1420,7 @@ export default function IdeaDetail() {
                                                     />
                                                 </svg>
                                                 <div className="absolute flex flex-col items-center">
-                                                    <span className={`text-6xl font-black ${(idea.score || 0) >= 80 ? 'text-yellow-500' : (idea.score || 0) > 60 ? 'text-blue-500' : (idea.score || 0) > 30 ? 'text-orange-500' : 'text-red-500'} italic transition-colors`}>{(idea.score || 0)}</span>
+                                                    <span className={`text-6xl font-black ${(idea.score || 0) >= 80 ? 'text-yellow-600 dark:text-yellow-500' : (idea.score || 0) > 60 ? 'text-blue-600 dark:text-blue-500' : (idea.score || 0) > 30 ? 'text-orange-600 dark:text-orange-500' : 'text-red-600 dark:text-red-500'} italic transition-colors`}>{(idea.score || 0)}</span>
                                                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                                                         {(idea.score || 0) >= 80 ? 'Investment Grade' : (idea.score || 0) > 60 ? 'Venture Solid' : (idea.score || 0) > 30 ? 'High Friction' : 'Market Mirage'}
                                                     </span>
@@ -1459,30 +1469,30 @@ export default function IdeaDetail() {
                                                                 className="space-y-6"
                                                             >
                                                                 {/* Adversarial Reality Check Layer (Moved Inside) */}
-                                                                <div className="w-full bg-red-500/5 border border-red-500/10 p-6 md:p-8 rounded-[2rem] relative overflow-hidden group/adversary text-left mb-8">
-                                                                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/5 blur-[80px] animate-pulse" />
+                                                                <div className="w-full bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/10 p-6 md:p-8 rounded-[2rem] relative overflow-hidden group/adversary text-left mb-8">
+                                                                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-[80px] animate-pulse" />
                                                                     <div className="relative z-10 space-y-6">
                                                                         <div className="flex items-center gap-3 border-b border-red-500/10 pb-4">
-                                                                            <div className="p-2 bg-red-500/10 rounded-xl text-red-500 animate-pulse">
+                                                                            <div className="p-2 bg-red-500/10 rounded-xl text-red-600 dark:text-red-500 animate-pulse">
                                                                                 <AlertTriangle size={18} />
                                                                             </div>
-                                                                            <h3 className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">Adversarial Reality Check</h3>
+                                                                            <h3 className="text-[10px] font-black text-red-600 dark:text-red-500 uppercase tracking-[0.3em]">Adversarial Reality Check</h3>
                                                                         </div>
 
                                                                         <div className="grid grid-cols-1 gap-6">
                                                                             <div className="space-y-2">
-                                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-red-400/60 uppercase tracking-widest">
+                                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-red-500/60 uppercase tracking-widest">
                                                                                     <X size={10} /> Kill Switch
                                                                                 </div>
-                                                                                <p className="text-white font-bold text-base leading-snug">
+                                                                                <p className="text-slate-900 dark:text-white font-bold text-base leading-snug">
                                                                                     {idea.killSwitch || "Analysis Pending..."}
                                                                                 </p>
                                                                             </div>
                                                                             <div className="space-y-2">
-                                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-red-400/60 uppercase tracking-widest">
+                                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-red-500/60 uppercase tracking-widest">
                                                                                     <Search size={10} /> Founder Delusion
                                                                                 </div>
-                                                                                <p className="text-slate-400 text-sm leading-relaxed italic pl-3 border-l-2 border-red-500/20">
+                                                                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed italic pl-3 border-l-2 border-red-500/20">
                                                                                     "{idea.realityCheck || "Analysis Pending..."}"
                                                                                 </p>
                                                                             </div>
@@ -1494,19 +1504,19 @@ export default function IdeaDetail() {
                                                                     <div key={pillar} className="group/stat">
                                                                         <div className="flex justify-between items-end mb-2 px-1">
                                                                             <div className="flex items-center gap-2">
-                                                                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/stat:text-blue-500 transition-colors">{pillar}</div>
+                                                                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/stat:text-blue-600 dark:group-hover/stat:text-blue-500 transition-colors">{pillar}</div>
                                                                                 {idea.pillarReasons && idea.pillarReasons[pillar] && (
                                                                                     <button
                                                                                         onClick={() => setExpandedPillar(expandedPillar === pillar ? null : pillar)}
-                                                                                        className="p-1 hover:bg-blue-600/20 rounded transition-colors"
+                                                                                        className="p-1 hover:bg-blue-100 dark:hover:bg-blue-600/20 rounded transition-colors"
                                                                                     >
-                                                                                        <Info size={12} className="text-blue-500" />
+                                                                                        <Info size={12} className="text-blue-600 dark:text-blue-500" />
                                                                                     </button>
                                                                                 )}
                                                                             </div>
-                                                                            <div className="text-sm font-black text-white italic">{val}%</div>
+                                                                            <div className="text-sm font-black text-slate-900 dark:text-white italic">{val}%</div>
                                                                         </div>
-                                                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                                                        <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden border border-slate-200 dark:border-white/5">
                                                                             <motion.div
                                                                                 initial={{ width: 0 }}
                                                                                 animate={{ width: `${val}%` }}
@@ -1521,16 +1531,16 @@ export default function IdeaDetail() {
                                                                                     initial={{ opacity: 0, height: 0 }}
                                                                                     animate={{ opacity: 1, height: 'auto' }}
                                                                                     exit={{ opacity: 0, height: 0 }}
-                                                                                    className="mt-4 p-4 bg-blue-600/5 border border-blue-500/20 rounded-2xl"
+                                                                                    className="mt-4 p-4 bg-blue-50 dark:bg-blue-600/5 border border-blue-200 dark:border-blue-500/20 rounded-2xl"
                                                                                 >
                                                                                     <div className="flex justify-between items-start mb-2">
-                                                                                        <p className="text-xs text-slate-400 leading-relaxed">{idea.pillarReasons[pillar]}</p>
+                                                                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{idea.pillarReasons[pillar]}</p>
                                                                                         <button
                                                                                             onClick={() => openChatWithContext(pillar)}
-                                                                                            className="ml-3 p-1.5 hover:bg-blue-600/20 rounded-lg transition-colors flex-shrink-0"
+                                                                                            className="ml-3 p-1.5 hover:bg-blue-100 dark:hover:bg-blue-600/20 rounded-lg transition-colors flex-shrink-0"
                                                                                             title="Discuss in Neural Studio"
                                                                                         >
-                                                                                            <MessageSquare size={14} className="text-blue-400" />
+                                                                                            <MessageSquare size={14} className="text-blue-600 dark:text-blue-400" />
                                                                                         </button>
                                                                                     </div>
                                                                                 </motion.div>
@@ -1546,7 +1556,7 @@ export default function IdeaDetail() {
                                                         <button
                                                             onClick={() => handleStressTest(false)}
                                                             disabled={isStressTesting}
-                                                            className="mt-12 w-full bg-slate-900 hover:bg-slate-800 text-white border border-white/5 py-6 rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 transition-all shadow-xl hover:shadow-blue-600/10"
+                                                            className="mt-12 w-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5 py-6 rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 transition-all shadow-xl hover:shadow-blue-600/10"
                                                         >
                                                             {isStressTesting ? <Loader2 className="animate-spin" /> : <ShieldCheck size={18} />}
                                                             Start Evolution Analysis
@@ -1559,8 +1569,8 @@ export default function IdeaDetail() {
                                                             disabled={isStressTesting}
                                                             className="mt-12 w-full group/sync flex flex-col items-center gap-4 transition-all"
                                                         >
-                                                            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                                                            <div className="flex items-center gap-3 text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.4em]">
+                                                            <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 dark:via-white/10 to-transparent" />
+                                                            <div className="flex items-center gap-3 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.4em]">
                                                                 {isStressTesting ? <Loader2 className="animate-spin" size={12} /> : <TrendingUp size={12} />}
                                                                 Sync Evolution
                                                             </div>
@@ -1572,8 +1582,8 @@ export default function IdeaDetail() {
 
 
                                         {idea.risks && (
-                                            <div className="bg-red-500/5 border border-red-500/20 p-8 rounded-[2.5rem]">
-                                                <h2 className="text-lg font-bold text-red-400 mb-6 flex items-center gap-2">
+                                            <div className="bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 p-8 rounded-[2.5rem]">
+                                                <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-6 flex items-center gap-2">
                                                     <AlertTriangle size={20} />
                                                     Critical Risks
                                                 </h2>
@@ -1584,9 +1594,9 @@ export default function IdeaDetail() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ delay: i * 0.1 }}
                                                             key={i}
-                                                            className="flex gap-3 text-sm text-slate-400"
+                                                            className="flex gap-3 text-sm text-slate-600 dark:text-slate-400"
                                                         >
-                                                            <span className="text-red-500 font-bold">{i + 1}.</span>
+                                                            <span className="text-red-600 dark:text-red-500 font-bold">{i + 1}.</span>
                                                             {risk.risk}
                                                         </motion.li>
                                                     ))}
@@ -1600,11 +1610,11 @@ export default function IdeaDetail() {
                                     className="max-w-4xl mx-auto space-y-8 pb-32"
                                 >
                                     <div className="lg:col-span-12 xl:col-span-9 space-y-12">
-                                        <section className="bg-[#0f172a]/40 backdrop-blur-2xl border border-white/[0.05] p-12 rounded-[3.5rem] relative overflow-hidden">
+                                        <section className="bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem] relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[80px]" />
 
                                             <div className="flex justify-between items-center mb-10 relative z-10">
-                                                <h2 className="text-2xl font-black text-white flex items-center gap-4 italic uppercase tracking-tight">
+                                                <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-4 italic uppercase tracking-tight">
                                                     <div className="p-3 bg-blue-600 rounded-2xl shadow-lg">
                                                         <Zap size={24} className="text-white" />
                                                     </div>
@@ -1613,7 +1623,7 @@ export default function IdeaDetail() {
                                             </div>
 
                                             <div className="space-y-8 relative z-10">
-                                                <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] space-y-6">
+                                                <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-8 rounded-[2.5rem] space-y-6">
                                                     <div className="space-y-4">
                                                         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Ignite a New Spark</h3>
                                                         <div className="space-y-4">
@@ -1622,13 +1632,13 @@ export default function IdeaDetail() {
                                                                 value={sparkTitle}
                                                                 onChange={(e) => setSparkTitle(e.target.value)}
                                                                 placeholder="Spark Name (e.g. 'Desktop First Pivot' or 'GPT-5 Integration')"
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-white focus:outline-none focus:border-blue-500/50"
+                                                                className="w-full bg-slate-100 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50"
                                                             />
                                                             <textarea
                                                                 value={sparkInput}
                                                                 onChange={(e) => setSparkInput(e.target.value)}
                                                                 placeholder="Describe the insight, agreement, or pivot point..."
-                                                                className="w-full bg-white/[0.02] border border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-32"
+                                                                className="w-full bg-slate-100 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-2xl px-6 py-4 text-sm text-slate-600 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 resize-none h-32"
                                                             />
                                                         </div>
                                                     </div>
@@ -1651,11 +1661,11 @@ export default function IdeaDetail() {
                                                                 key={spark.id}
                                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
-                                                                className="bg-white/[0.02] border border-white/[0.05] p-8 rounded-[2.5rem] group hover:border-blue-500/20 transition-all relative"
+                                                                className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 rounded-[2.5rem] group hover:border-blue-500/20 transition-all relative"
                                                             >
                                                                 <div className="flex justify-between items-start mb-4">
                                                                     <div className="space-y-1">
-                                                                        <h4 className="text-blue-400 font-bold text-sm tracking-tight">{spark.title || 'Untitled Spark'}</h4>
+                                                                        <h4 className="text-blue-600 dark:text-blue-400 font-bold text-sm tracking-tight">{spark.title || 'Untitled Spark'}</h4>
                                                                         <p className="text-[10px] text-slate-500 font-medium">Capture: {new Date(spark.createdAt).toLocaleDateString()}</p>
                                                                     </div>
                                                                     <button
@@ -1669,7 +1679,7 @@ export default function IdeaDetail() {
                                                         ))
                                                     ) : (
                                                         <div className="col-span-full py-20 text-center space-y-4">
-                                                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-slate-600">
+                                                            <div className="w-20 h-20 bg-slate-200 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto text-slate-600">
                                                                 <Sparkles size={32} />
                                                             </div>
                                                             <div className="text-slate-500 font-medium font-plus">No sparks ignited yet. Save ideas from chat or type them above.</div>
