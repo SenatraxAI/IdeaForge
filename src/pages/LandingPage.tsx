@@ -1,4 +1,4 @@
-import { Rocket, LogIn, LogOut, User, ShieldCheck, Sparkles, Zap, ChevronRight } from 'lucide-react'
+import { Rocket, ShieldCheck, Sparkles, Zap, ChevronRight } from 'lucide-react'
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
