@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🧠 Idea Validator (The "Neural Architect")
 
 > **A brutally honest AI-powered co-founder that helps you stress-test, refine, and forge billion-dollar ideas.**
@@ -61,3 +62,36 @@ We implemented a custom resilience layer in `ai.service.ts` to handle the strict
 -   [ ] **Multi-Agent Debate**: Have "Marketing" and "Engineering" agents argue about your features.
 -   [ ] **Pitch Deck Gen**: Auto-generate a slide deck from the Deep Dive PRD.
 -   [ ] **Competitor Watch**: Daily alerts on competitor moves.
+=======
+<<<<<<< HEAD
+# 🧠 Idea Validator - Frontend UI
+
+The client-side interface for "The Neural Architect". Built with React, Vite, and Framer Motion.
+
+## ⚡ Features
+-   **Neural Pulse**: Visual feedback for AI processing states.
+-   **Chat Interface**: Real-time consultation with "Venty" (The AI Strategist).
+-   **Report View**: Beautiful rendering of the "Deep Dive" PRDs and Stress Test results.
+-   **Spark Management**: Quick capture and management of idea sparks.
+
+## 🛠️ Tech Stack
+-   **Framework**: React (Vite)
+-   **Styling**: TailwindCSS
+-   **State/Auth**: Kinde Auth
+-   **Animations**: Framer Motion
+
+## 📦 Setup & Run
+1.  Install dependencies:
+    ```bash
+    npm install
+    ```
+2.  Configure Environment:
+    -   Ensure the backend is running on `http://localhost:5000`.
+3.  Start Dev Server:
+    ```bash
+    npm run dev
+    ```
+=======
+# IdeaForge_frontend
+>>>>>>> 6091c571b36d9cbc2d9bebfe15239366538085fa
+>>>>>>> e93d7aa203e4d74bf4d66afa8fc6031a5a659ff3
