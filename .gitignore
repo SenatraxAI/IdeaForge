@@ -1,4 +1,5 @@
 node_modules
+<<<<<<< HEAD
 .env
 .DS_Store
 dist
@@ -6,3 +7,9 @@ coverage
 .idea
 .vscode
 *.log
+=======
+dist
+dist-ssr
+*.local
+.DS_Store
+>>>>>>> e93d7aa203e4d74bf4d66afa8fc6031a5a659ff3

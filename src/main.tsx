@@ -6,8 +6,6 @@ import './index.css'
 
 import { BrowserRouter } from 'react-router-dom';
 
-import { ThemeProvider } from './components/ThemeProvider';
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <BrowserRouter>
@@ -17,9 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 redirectUri={import.meta.env.VITE_KINDE_REDIRECT_URI}
                 logoutUri={import.meta.env.VITE_KINDE_LOGOUT_REDIRECT_URI}
             >
-                <ThemeProvider defaultTheme="dark" storageKey="ideaforge-ui-theme">
-                    <App />
-                </ThemeProvider>
+                <App />
             </KindeProvider>
         </BrowserRouter>
     </React.StrictMode>,
