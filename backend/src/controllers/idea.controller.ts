@@ -11,7 +11,7 @@ export const ideaController = {
      */
     async create(req: Request, res: Response) {
         try {
-            const { title, description } = req.body;
+            const { title, description, goal } = req.body;
             const creatorId = (req as any).user.sub; // From Kinde JWT
 
             if (!title || !description) {
@@ -22,6 +22,7 @@ export const ideaController = {
             const newIdea = {
                 title,
                 description,
+                goal: goal || '',
                 creatorId,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -88,7 +89,7 @@ export const ideaController = {
             }
             */
 
-            const forgeSpec = await aiService.forgeIdea(idea.title, idea.description, marketResearch.context);
+            const forgeSpec = await aiService.forgeIdea(idea.title, idea.description, idea.goal, marketResearch.context);
 
             const updateDoc: any = {
                 $set: { forgeSpec, marketResearch, updatedAt: new Date() }
@@ -147,7 +148,7 @@ export const ideaController = {
             }
 
             // Perform the deep analysis (INCLUDES DEEP DIVE NOW)
-            const analysis = await aiService.stressTestIdea(idea.title, idea.forgeSpec, marketResearch.context, idea.smallerSparks);
+            const analysis = await aiService.stressTestIdea(idea.title, idea.forgeSpec, marketResearch.context, idea.smallerSparks, idea.goal);
 
             // Use the Deep Dive from the single-pass analysis
             const deepDive = analysis.deepDive;
@@ -291,13 +292,13 @@ export const ideaController = {
     async update(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { title, description } = req.body;
+            const { title, description, goal } = req.body;
             const creatorId = (req as any).user.sub;
             const db = getDb();
 
             const result = await db.collection('ideas').updateOne(
                 { _id: new ObjectId(id), creatorId },
-                { $set: { title, description, updatedAt: new Date() } }
+                { $set: { title, description, goal, updatedAt: new Date() } }
             );
 
             if (result.matchedCount === 0) {

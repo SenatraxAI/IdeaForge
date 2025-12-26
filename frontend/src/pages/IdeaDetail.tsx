@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, AlertTriangle, ShieldCheck, Loader2, Info, Save, Edit3, Target, TrendingUp, Search, MessageSquare, Send, X, Workflow, Cpu, Rocket, DollarSign, Zap, RefreshCw, Trash2, Wand2, Check, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, Sparkles, AlertTriangle, ShieldCheck, Loader2, Info, Save, Edit3, Target, TrendingUp, Search, MessageSquare, Send, X, Workflow, Cpu, Rocket, DollarSign, Zap, RefreshCw, Trash2, Wand2, Check, Volume2, VolumeX, Download } from 'lucide-react';
 import { ideaApi, setAuthToken } from '../lib/api';
+import { exportToMarkdown, exportToPDF } from '../lib/exportUtils';
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import VoiceInput from '../components/VoiceInput';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
@@ -31,6 +32,39 @@ const renderMarkdown = (text: string): ReactNode => {
     return text;
 };
 
+const renderSafeContent = (content: any): ReactNode => {
+    if (content === null || content === undefined) return null;
+
+    if (typeof content === 'string') {
+        return renderMarkdown(content);
+    }
+
+    if (Array.isArray(content)) {
+        return (
+            <ul className="list-disc pl-5 space-y-1">
+                {content.map((item, i) => (
+                    <li key={i}>{renderSafeContent(item)}</li>
+                ))}
+            </ul>
+        );
+    }
+
+    if (typeof content === 'object') {
+        return (
+            <div className="space-y-2 p-2 bg-slate-800/50 rounded border border-slate-700/50">
+                {Object.entries(content).map(([key, value]) => (
+                    <div key={key}>
+                        <span className="font-semibold text-blue-400 capitalize">{key.replace(/([A-Z])/g, ' $1')}: </span>
+                        <span>{renderSafeContent(value)}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    return String(content);
+};
+
 export default function IdeaDetail() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -41,7 +75,9 @@ export default function IdeaDetail() {
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
     const [editedDesc, setEditedDesc] = useState('');
+    const [editedGoal, setEditedGoal] = useState('');
     const [activePhase, setActivePhase] = useState<any>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     // Chat / Consult State
     const [chatOpen, setChatOpen] = useState(false);
@@ -206,6 +242,7 @@ export default function IdeaDetail() {
                 setIdea(found);
                 setEditedTitle(found.title);
                 setEditedDesc(found.description);
+                setEditedGoal(found.goal || '');
             } else {
                 navigate('/dashboard');
             }
@@ -218,8 +255,8 @@ export default function IdeaDetail() {
     const handleUpdate = async () => {
         if (!id) return;
         try {
-            await ideaApi.update(id, editedTitle, editedDesc);
-            setIdea({ ...idea, title: editedTitle, description: editedDesc });
+            await ideaApi.update(id, editedTitle, editedDesc, editedGoal);
+            setIdea({ ...idea, title: editedTitle, description: editedDesc, goal: editedGoal });
             setIsEditing(false);
         } catch (err) {
             console.error(err);
@@ -268,7 +305,8 @@ export default function IdeaDetail() {
 
         try {
             const res = await ideaApi.consult(id, currentQuery, activeSection, chatHistory);
-            setChatHistory(prev => [...prev, { role: 'ai', text: res.data.answer }]);
+            const aiAnswer = typeof res.data.answer === 'string' ? res.data.answer : JSON.stringify(res.data.answer, null, 2);
+            setChatHistory(prev => [...prev, { role: 'ai', text: aiAnswer }]);
         } catch (err) {
             console.error(err);
             // Don't add error to history, just notify user or show a temporary message
@@ -387,7 +425,7 @@ export default function IdeaDetail() {
             <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-blue-600/[0.03] blur-[150px] pointer-events-none rounded-full" />
             <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-indigo-600/[0.02] blur-[100px] pointer-events-none rounded-full" />
 
-            <div className="w-full xl:px-32 relative z-10">
+            <div className="w-full xl:px-32 relative z-10" id="idea-export-content">
 
                 <header className="flex flex-col xl:flex-row justify-between items-start gap-12 lg:gap-12 mb-16 lg:mb-24">
                     <div className="space-y-6 max-w-4xl w-full">
@@ -406,7 +444,14 @@ export default function IdeaDetail() {
                                     value={editedDesc}
                                     onChange={e => setEditedDesc(e.target.value)}
                                     rows={4}
+                                    placeholder="Problem & Vision..."
                                     className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-3xl px-8 py-6 text-xl text-slate-600 dark:text-slate-400 focus:outline-none focus:border-blue-500/50 resize-none"
+                                />
+                                <input
+                                    value={editedGoal}
+                                    onChange={e => setEditedGoal(e.target.value)}
+                                    placeholder="Primary Goal (e.g. Social Impact, Personal growth, Rapid Profit)..."
+                                    className="w-full bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.1] rounded-3xl px-8 py-4 text-xl text-blue-600 dark:text-blue-400 font-bold focus:outline-none focus:border-blue-500/50"
                                 />
                                 <div className="flex gap-4">
                                     <button onClick={handleUpdate} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20">
@@ -419,11 +464,16 @@ export default function IdeaDetail() {
                             </div>
                         ) : (
                             <div className="group relative">
-                                <h1 className="text-4xl md:text-6xl lg:text-8xl 3xl:text-9xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-[0.9] mb-6 md:mb-8">
+                                <h1 className="text-4xl md:text-6xl lg:text-8xl 3xl:text-9xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-[0.9] mb-4">
                                     {idea.title}<span className="text-blue-600">.</span>
                                 </h1>
-                                <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-2xl font-medium leading-relaxed opacity-70 3xl:max-w-5xl mb-12">{idea.description}</p>
-                                <div className="flex gap-4">
+                                {idea.goal && (
+                                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black uppercase tracking-[0.2em] text-sm mb-8 md:mb-12 bg-blue-100 dark:bg-blue-600/10 px-6 py-2 rounded-full w-fit">
+                                        <Target size={16} />
+                                        Primary Goal: {idea.goal}
+                                    </div>
+                                )}
+                                <div className="flex flex-wrap gap-4">
                                     <button
                                         onClick={() => setIsEditing(true)}
                                         className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all bg-slate-100 dark:bg-white/5 px-6 py-3 rounded-full hover:bg-slate-200 dark:hover:bg-white/10"
@@ -435,6 +485,25 @@ export default function IdeaDetail() {
                                         className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-white transition-all bg-blue-100 dark:bg-blue-600/10 px-6 py-3 rounded-full hover:bg-blue-600 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-200 dark:border-blue-500/20"
                                     >
                                         <MessageSquare size={14} /> Open Neural Studio
+                                    </button>
+                                    <button
+                                        onClick={() => exportToMarkdown(idea)}
+                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:text-white transition-all bg-emerald-100 dark:bg-emerald-600/10 px-6 py-3 rounded-full hover:bg-emerald-600 border border-emerald-200 dark:border-emerald-500/20"
+                                    >
+                                        <Download size={14} /> Export MD
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            setIsPrinting(true);
+                                            // Small delay to let React render all sections
+                                            setTimeout(async () => {
+                                                await exportToPDF('idea-export-content', idea.title || 'Idea');
+                                                setIsPrinting(false);
+                                            }, 500);
+                                        }}
+                                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 hover:text-white transition-all bg-purple-100 dark:bg-purple-600/10 px-6 py-3 rounded-full hover:bg-purple-600 border border-purple-200 dark:border-purple-500/20"
+                                    >
+                                        <Download size={14} /> Export PDF
                                     </button>
                                 </div>
                             </div>
@@ -507,7 +576,7 @@ export default function IdeaDetail() {
                                                     </div>
                                                     Core Specification
                                                 </h2>
-                                                <div className="flex gap-4">
+                                                <div className="flex flex-wrap gap-2 md:gap-4 flex-shrink-0">
                                                     <button
                                                         onClick={() => {
                                                             if (editingSection === 'coreSpec') {
@@ -516,7 +585,7 @@ export default function IdeaDetail() {
                                                                 setEditingSection('coreSpec');
                                                             }
                                                         }}
-                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
+                                                        className="flex-shrink-0 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
                                                     >
                                                         <Edit3 size={12} /> {editingSection === 'coreSpec' ? 'Save' : 'Edit'}
                                                     </button>
@@ -529,7 +598,7 @@ export default function IdeaDetail() {
                                                                 speak(textToRead);
                                                             }
                                                         }}
-                                                        className={`opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${isSpeaking ? 'bg-red-500 text-white border-red-500' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10'}`}
+                                                        className={`flex-shrink-0 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${isSpeaking ? 'bg-red-500 text-white border-red-500' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10'}`}
                                                     >
                                                         {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} className={!isSpeaking ? 'animate-pulse' : ''} />}
                                                         <span className="hidden md:inline">{isSpeaking ? 'Stop Reading' : 'Read Full Spec'}</span>
@@ -537,9 +606,9 @@ export default function IdeaDetail() {
                                                     </button>
                                                     <button
                                                         onClick={() => openChatWithContext('Core Specification')}
-                                                        className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-white bg-blue-100 dark:bg-blue-600/10 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-600"
+                                                        className="flex-shrink-0 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-white bg-blue-100 dark:bg-blue-600/10 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-600 transition-all"
                                                     >
-                                                        <MessageSquare size={12} /> Refine Spec
+                                                        <MessageSquare size={12} /> Refine
                                                     </button>
                                                     {isHighViability && (
                                                         <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest animate-pulse">
@@ -574,7 +643,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{idea.forgeSpec.problem}</p>
+                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{renderSafeContent(idea.forgeSpec.problem)}</p>
                                                     )}
                                                 </div>
                                                 <div className="space-y-4 p-8 bg-blue-50 dark:bg-blue-600/5 rounded-3xl border border-blue-100 dark:border-blue-500/10">
@@ -599,7 +668,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-xl text-slate-900 dark:text-white leading-relaxed font-bold italic">"{idea.forgeSpec.solution}"</p>
+                                                        <p className="text-xl text-slate-900 dark:text-white leading-relaxed font-bold italic">"{renderSafeContent(idea.forgeSpec.solution)}"</p>
                                                     )}
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -624,7 +693,7 @@ export default function IdeaDetail() {
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{idea.forgeSpec.targetAudience}</p>
+                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{renderSafeContent(idea.forgeSpec.targetAudience)}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-4">
@@ -648,7 +717,7 @@ export default function IdeaDetail() {
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{idea.forgeSpec.revenueModel}</p>
+                                                            <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{renderSafeContent(idea.forgeSpec.revenueModel)}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -688,7 +757,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.creativeFlow}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.forgeSpec.expansions.creativeFlow)}</p>
                                                     )}
                                                 </div>
 
@@ -722,7 +791,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.techStack}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.forgeSpec.expansions.techStack)}</p>
                                                     )}
                                                 </div>
 
@@ -756,7 +825,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.growthLevers}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.forgeSpec.expansions.growthLevers)}</p>
                                                     )}
                                                 </div>
 
@@ -790,7 +859,7 @@ export default function IdeaDetail() {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{idea.forgeSpec.expansions.unitEconomics}</p>
+                                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.forgeSpec.expansions.unitEconomics)}</p>
                                                     )}
                                                 </div>
 
@@ -855,7 +924,7 @@ export default function IdeaDetail() {
                                                     ) : (
                                                         <div className="space-y-2">
                                                             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed italic">
-                                                                {idea.forgeSpec.expansions.notes || "No specific directives yet. Click the pen to add notes that will guide Venty's evolution analysis."}
+                                                                {renderSafeContent(idea.forgeSpec.expansions.notes || "No specific directives yet. Click the pen to add notes that will guide Venty's evolution analysis.")}
                                                             </p>
                                                             <div className="flex items-center gap-2 text-[8px] font-bold text-blue-600/50 dark:text-blue-500/50 uppercase tracking-widest">
                                                                 <ShieldCheck size={10} /> Priority Instruction Layer Active
@@ -904,7 +973,7 @@ export default function IdeaDetail() {
                                                                 <MessageSquare size={20} className="text-blue-500 dark:text-blue-400" />
                                                             </button>
                                                         </div>
-                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">{idea.deepDive.executiveSummary}</p>
+                                                        <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.executiveSummary)}</p>
                                                     </div>
                                                 </section>
 
@@ -941,15 +1010,15 @@ export default function IdeaDetail() {
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Problem Statement</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.statement}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.problemAnalysis.statement)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Market Evidence</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.evidence}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.problemAnalysis.evidence)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Why Now</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.problemAnalysis.urgency}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.problemAnalysis.urgency)}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -979,7 +1048,7 @@ export default function IdeaDetail() {
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Value Proposition</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.valueProposition}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.solutionArchitecture.valueProposition)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Key Features</h4>
@@ -996,7 +1065,7 @@ export default function IdeaDetail() {
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Technical Approach</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.solutionArchitecture.technicalApproach}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.solutionArchitecture.technicalApproach)}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1022,25 +1091,25 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('market') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('market')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                                     <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">TAM</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.tam}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.deepDive.marketOpportunity.tam)}</p>
                                                                     </div>
                                                                     <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">SAM</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.sam}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.deepDive.marketOpportunity.sam)}</p>
                                                                     </div>
                                                                     <div className="p-6 bg-yellow-50 dark:bg-yellow-600/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-[0.3em] mb-3">SOM</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.marketOpportunity.som}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{renderSafeContent(idea.deepDive.marketOpportunity.som)}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Market Trends</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.marketOpportunity.trends}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.marketOpportunity.trends)}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1066,7 +1135,7 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('competitive') && (
+                                                        {(isHighViability || isPrinting || expandedDeepDiveSections.has('competitive')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Direct Competitors</h4>
@@ -1078,11 +1147,11 @@ export default function IdeaDetail() {
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Competitive Advantage</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.advantage}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.competitiveLandscape.advantage)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Moat & Defensibility</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.competitiveLandscape.moat}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.competitiveLandscape.moat)}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1108,19 +1177,19 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('business') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('business')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Revenue Streams</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.revenueStreams}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.businessModel.revenueStreams)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Pricing Strategy</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.pricing}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.businessModel.pricing)}</p>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Unit Economics</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.businessModel.unitEconomics}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{renderSafeContent(idea.deepDive.businessModel.unitEconomics)}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1146,7 +1215,7 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('gtm') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('gtm')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Target Segments</h4>
@@ -1184,7 +1253,7 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('financial') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('financial')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                                     <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
@@ -1228,7 +1297,7 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('risks') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('risks')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
                                                                 {(idea.deepDive?.riskAssessment?.risks || []).map((risk: any, i: number) => (
                                                                     <div key={i} className="p-6 bg-red-50 dark:bg-red-600/5 border border-red-200 dark:border-red-500/10 rounded-2xl">
@@ -1260,7 +1329,7 @@ export default function IdeaDetail() {
                                                         </div>
                                                     </div>
                                                     <AnimatePresence>
-                                                        {expandedDeepDiveSections.has('metrics') && (
+                                                        {(isPrinting || expandedDeepDiveSections.has('metrics')) && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
                                                                 <div className="p-6 bg-indigo-50 dark:bg-indigo-600/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl">
                                                                     <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-500 uppercase tracking-[0.3em] mb-3">North Star Metric</h4>
@@ -1300,7 +1369,7 @@ export default function IdeaDetail() {
                                                 </div>
                                                 <div className={`${!showFullSolution ? 'max-h-32 overflow-hidden relative' : ''}`}>
                                                     <p className="text-2xl text-slate-600 dark:text-slate-400 font-medium leading-normal italic opacity-80">
-                                                        {idea.forgeSpec.description}
+                                                        {renderSafeContent(idea.forgeSpec.description)}
                                                     </p>
                                                     {!showFullSolution && (
                                                         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-[#010409] to-transparent" />
@@ -1371,54 +1440,52 @@ export default function IdeaDetail() {
                                                 </button>
 
                                                 {/* Mind Map Structure */}
-                                                <div className="relative w-full max-w-5xl md:h-[400px] flex flex-col md:flex-row items-center justify-center relative z-10">
-                                                    {/* Desktop SVG Connections */}
-                                                    <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-20">
-                                                        <defs>
-                                                            <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                                <stop offset="0%" stopColor="#2563eb" stopOpacity="0" />
-                                                                <stop offset="50%" stopColor="#2563eb" stopOpacity="1" />
-                                                                <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <path d="M 100 200 Q 250 50 500 200 T 900 200" fill="transparent" stroke="url(#line-grad)" strokeWidth="2" strokeDasharray="8 8" className="animate-dash" />
-                                                    </svg>
+                                                {/* Mind Map Structure - Improved for all 10 phases */}
+                                                <div className="relative w-full max-w-6xl relative z-10">
+                                                    {/* Desktop SVG Connections - Hidden when too many phases to keep layout clean */}
+                                                    {(idea.roadmap || []).length <= 5 && (
+                                                        <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-20">
+                                                            <defs>
+                                                                <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0" />
+                                                                    <stop offset="50%" stopColor="#2563eb" stopOpacity="1" />
+                                                                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                            <path d="M 100 200 Q 250 50 500 200 T 900 200" fill="transparent" stroke="url(#line-grad)" strokeWidth="2" strokeDasharray="8 8" className="animate-dash" />
+                                                        </svg>
+                                                    )}
 
                                                     {/* Mobile Vertical Connection */}
                                                     <div className="md:hidden absolute left-1/2 -translate-x-1/2 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-blue-500/30 to-transparent border-l border-dashed border-blue-500/20" />
 
-                                                    <div className="flex flex-col md:grid md:grid-cols-5 gap-12 md:gap-8 w-full relative">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-x-8 md:gap-y-16 w-full relative">
                                                         {(idea.roadmap || []).map((item: any, i: number) => (
                                                             <motion.div
-                                                                key={item.id}
-                                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                                whileInView={{ opacity: 1, scale: 1 }}
-                                                                transition={{ delay: i * 0.1 }}
+                                                                key={item.id || i}
+                                                                initial={{ opacity: 0, y: 20 }}
+                                                                whileInView={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: i * 0.05 }}
                                                                 className="group relative flex flex-col items-center"
                                                             >
                                                                 {/* The Node */}
                                                                 <button
                                                                     onClick={() => setActivePhase(item)}
-                                                                    className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white dark:bg-[#0a0c10] border-2 border-slate-100 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-blue-700 dark:group-hover:text-white"
+                                                                    className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white dark:bg-[#0a0c10] border-2 border-slate-100 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-blue-700 dark:group-hover:text-white mb-6"
                                                                 >
                                                                     <div className="absolute inset-0 rounded-full bg-blue-600/5 scale-0 group-hover:scale-150 transition-transform duration-700 blur-xl" />
                                                                     <span className="text-lg md:text-xl font-black italic">{i + 1}</span>
                                                                 </button>
 
-                                                                {/* Label - Improved for mobile */}
-                                                                <div className="mt-4 md:mt-6 text-center md:absolute md:top-24 md:left-1/2 md:-translate-x-1/2 w-48 z-30 pointer-events-none transition-all group-hover:translate-y-1">
+                                                                {/* Labels - Non-absolute to prevent overlap */}
+                                                                <div className="text-center w-full max-w-[200px] transition-all group-hover:translate-y-1">
                                                                     <div className="text-[8px] font-black text-blue-600 dark:text-blue-500 tracking-[0.3em] uppercase mb-2 bg-white/80 dark:bg-[#0a0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-blue-200 dark:border-blue-500/20 inline-block">
                                                                         {item.phase}
                                                                     </div>
-                                                                    <div className="text-[10px] md:text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-xl leading-tight">
-                                                                        {item.task}
+                                                                    <div className="text-[10px] md:text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-xl leading-tight min-h-[60px] flex items-center justify-center">
+                                                                        {renderSafeContent(item.task)}
                                                                     </div>
                                                                 </div>
-
-                                                                {/* Connector Dot */}
-                                                                {i < 4 && (
-                                                                    <div className="hidden md:block absolute top-10 -right-4 w-1 h-1 bg-blue-500/20 rounded-full" />
-                                                                )}
                                                             </motion.div>
                                                         ))}
                                                     </div>
@@ -1528,7 +1595,7 @@ export default function IdeaDetail() {
                                                                                     <X size={10} /> Kill Switch
                                                                                 </div>
                                                                                 <p className="text-slate-900 dark:text-white font-bold text-base leading-snug">
-                                                                                    {idea.killSwitch || "Analysis Pending..."}
+                                                                                    {renderSafeContent(idea.killSwitch || "Analysis Pending...")}
                                                                                 </p>
                                                                             </div>
                                                                             <div className="space-y-2">
@@ -1536,7 +1603,7 @@ export default function IdeaDetail() {
                                                                                     <Search size={10} /> Founder Delusion
                                                                                 </div>
                                                                                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed italic pl-3 border-l-2 border-red-500/20">
-                                                                                    "{idea.realityCheck || "Analysis Pending..."}"
+                                                                                    "{renderSafeContent(idea.realityCheck || "Analysis Pending...")}"
                                                                                 </p>
                                                                             </div>
                                                                         </div>
@@ -1577,7 +1644,7 @@ export default function IdeaDetail() {
                                                                                     className="mt-4 p-4 bg-blue-50 dark:bg-blue-600/5 border border-blue-200 dark:border-blue-500/20 rounded-2xl"
                                                                                 >
                                                                                     <div className="flex justify-between items-start mb-2">
-                                                                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{idea.pillarReasons[pillar]}</p>
+                                                                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{renderSafeContent(idea.pillarReasons[pillar])}</p>
                                                                                         <button
                                                                                             onClick={() => openChatWithContext(pillar)}
                                                                                             className="ml-3 p-1.5 hover:bg-blue-100 dark:hover:bg-blue-600/20 rounded-lg transition-colors flex-shrink-0"
@@ -2135,7 +2202,7 @@ export default function IdeaDetail() {
                         </div>
                     )}
                 </AnimatePresence>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

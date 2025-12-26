@@ -6,12 +6,13 @@ import VoiceInput from './VoiceInput';
 interface NewSparkModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (title: string, description: string) => Promise<void>;
+    onSubmit: (title: string, description: string, goal: string) => Promise<void>;
 }
 
 export default function NewSparkModal({ isOpen, onClose, onSubmit }: NewSparkModalProps) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [goal, setGoal] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -20,9 +21,10 @@ export default function NewSparkModal({ isOpen, onClose, onSubmit }: NewSparkMod
 
         setIsSubmitting(true);
         try {
-            await onSubmit(title, description);
+            await onSubmit(title, description, goal);
             setTitle('');
             setDescription('');
+            setGoal('');
             onClose();
         } catch (err) {
             console.error("Submission failed", err);
@@ -76,6 +78,16 @@ export default function NewSparkModal({ isOpen, onClose, onSubmit }: NewSparkMod
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Enter your concept's focus..."
                                     className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] rounded-3xl px-6 md:px-8 py-5 text-xl font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-800 focus:outline-none focus:bg-white dark:focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] px-2">Primary Intent / Goal</label>
+                                <input
+                                    value={goal}
+                                    onChange={(e) => setGoal(e.target.value)}
+                                    placeholder="e.g. Social Impact, Profit, or Personal Utility..."
+                                    className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] rounded-3xl px-6 md:px-8 py-5 text-xl font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-800 focus:outline-none focus:bg-white dark:focus:bg-white/[0.04] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all text-blue-600 dark:text-blue-400"
                                 />
                             </div>
 

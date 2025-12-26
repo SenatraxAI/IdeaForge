@@ -50,9 +50,9 @@ export default function Dashboard() {
         }
     };
 
-    const handleCreateIdea = async (title: string, description: string) => {
+    const handleCreateIdea = async (title: string, description: string, goal: string) => {
         try {
-            const res = await ideaApi.create(title, description);
+            const res = await ideaApi.create(title, description, goal);
             setIdeas(prevIdeas => [res.data, ...prevIdeas]);
             setIsModalOpen(false);
         } catch (err: any) {
