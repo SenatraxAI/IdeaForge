@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef, ReactNode } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Sparkles, AlertTriangle, ShieldCheck, Loader2, Info, Save, Edit3, Target, TrendingUp, Search, MessageSquare, Send, X, Workflow, Cpu, Rocket, DollarSign, Zap, RefreshCw, Trash2, Wand2, Check } from 'lucide-react';
-import { ideaApi } from '../lib/api';
-import Logo from '../components/Logo';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Sparkles, AlertTriangle, ShieldCheck, Loader2, Info, Save, Edit3, Target, TrendingUp, Search, MessageSquare, Send, X, Workflow, Cpu, Rocket, DollarSign, Zap, RefreshCw, Trash2, Wand2, Check, Volume2, VolumeX } from 'lucide-react';
+import { ideaApi, setAuthToken } from '../lib/api';
+import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
+import VoiceInput from '../components/VoiceInput';
+import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 import { motion, AnimatePresence } from 'framer-motion';
-
 const renderMarkdown = (text: string): ReactNode => {
     // Handle Bold (**text**)
     const boldRegex = /\*\*(.*?)\*\*/g;
@@ -70,6 +70,7 @@ export default function IdeaDetail() {
     const unitEconomicsRef = useRef<HTMLTextAreaElement>(null);
     const notesRef = useRef<HTMLTextAreaElement>(null);
     const [expandedDeepDiveSections, setExpandedDeepDiveSections] = useState<Set<string>>(new Set());
+    const { speak, stop, isSpeaking } = useSpeechSynthesis();
 
     // AI Assist State
     const [aiAssistField, setAiAssistField] = useState<string | null>(null);
@@ -173,24 +174,46 @@ export default function IdeaDetail() {
         }
     }, [chatHistory, chatOpen]);
 
+    const { getToken, isAuthenticated, isLoading: authLoading } = useKindeAuth();
+
     useEffect(() => {
-        const fetchIdea = async () => {
+        const init = async () => {
+            if (authLoading) return;
+            if (!isAuthenticated) {
+                navigate('/');
+                return;
+            }
+
             try {
-                const res = await ideaApi.list();
-                const found = res.data.find((i: any) => i._id === id);
-                if (found) {
-                    setIdea(found);
-                    setEditedTitle(found.title);
-                    setEditedDesc(found.description);
+                const token = await getToken();
+                if (token) {
+                    setAuthToken(token);
+                    await fetchIdea();
                 }
-                else navigate('/dashboard');
             } catch (err) {
-                console.error(err);
+                console.error("Auth init failed", err);
                 navigate('/dashboard');
             }
         };
-        fetchIdea();
-    }, [id, navigate]);
+        init();
+    }, [id, getToken, isAuthenticated, authLoading]);
+
+    const fetchIdea = async () => {
+        try {
+            const res = await ideaApi.list();
+            const found = res.data.find((i: any) => i._id === id);
+            if (found) {
+                setIdea(found);
+                setEditedTitle(found.title);
+                setEditedDesc(found.description);
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            console.error("Fetch idea failed", err);
+            navigate('/dashboard');
+        }
+    };
 
     const handleUpdate = async () => {
         if (!id) return;
@@ -303,7 +326,7 @@ export default function IdeaDetail() {
             await ideaApi.deleteSpark(id, sparkId);
             setIdea((prev: any) => ({
                 ...prev,
-                smallerSparks: prev.smallerSparks.filter((s: any) => s.id !== sparkId)
+                smallerSparks: (prev.smallerSparks || []).filter((s: any) => s.id !== sparkId)
             }));
         } catch (err) {
             console.error(err);
@@ -349,33 +372,24 @@ export default function IdeaDetail() {
         }
     };
 
-    if (!idea) return null;
+    if (authLoading || !idea) return (
+        <div className="min-h-screen bg-[#010409] flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4" />
+            <p className="text-xs font-black uppercase tracking-[0.5em] text-blue-500 animate-pulse">Initializing Interface</p>
+        </div>
+    );
 
     const isHighViability = (idea.score || 0) >= 80;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#010409] text-slate-900 dark:text-slate-300 p-4 md:p-8 lg:p-20 font-plus overflow-x-hidden relative transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#010409] text-slate-900 dark:text-slate-300 p-6 md:p-12 lg:p-20 font-plus overflow-x-hidden relative transition-colors duration-300">
             {/* Visual Depth */}
             <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-blue-600/[0.03] blur-[150px] pointer-events-none rounded-full" />
             <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-indigo-600/[0.02] blur-[100px] pointer-events-none rounded-full" />
 
-            <div className="w-full xl:px-32 3xl:px-48 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-16">
-                    <Link to="/dashboard" className="group">
-                        <Logo />
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <Link to="/dashboard" className="hidden md:inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all group font-bold uppercase tracking-widest text-[10px] py-2">
-                            <div className="p-2 bg-slate-200 dark:bg-white/5 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-600/10 transition-colors">
-                                <ChevronLeft size={16} />
-                            </div>
-                            Back to Workbench
-                        </Link>
-                    </div>
-                </div>
+            <div className="w-full xl:px-32 relative z-10">
 
-                <header className="flex flex-col xl:flex-row justify-between items-start gap-8 lg:gap-12 mb-12 lg:mb-24">
+                <header className="flex flex-col xl:flex-row justify-between items-start gap-12 lg:gap-12 mb-16 lg:mb-24">
                     <div className="space-y-6 max-w-4xl w-full">
                         <div className="flex items-center gap-3 text-blue-600 dark:text-blue-500 font-black uppercase tracking-[0.4em] text-[10px]">
                             <div className="w-8 h-px bg-blue-600 dark:bg-blue-500" />
@@ -405,10 +419,10 @@ export default function IdeaDetail() {
                             </div>
                         ) : (
                             <div className="group relative">
-                                <h1 className="text-4xl md:text-6xl lg:text-8xl 3xl:text-9xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-none mb-4 md:mb-6">
+                                <h1 className="text-4xl md:text-6xl lg:text-8xl 3xl:text-9xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-[0.9] mb-6 md:mb-8">
                                     {idea.title}<span className="text-blue-600">.</span>
                                 </h1>
-                                <p className="text-slate-600 dark:text-slate-400 text-xl lg:text-2xl font-medium leading-relaxed opacity-70 3xl:max-w-5xl mb-8">{idea.description}</p>
+                                <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-2xl font-medium leading-relaxed opacity-70 3xl:max-w-5xl mb-12">{idea.description}</p>
                                 <div className="flex gap-4">
                                     <button
                                         onClick={() => setIsEditing(true)}
@@ -471,7 +485,7 @@ export default function IdeaDetail() {
                                     className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'sparks' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-lg' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
                                 >
                                     Smaller Sparks
-                                    {idea.smallerSparks?.length > 0 && (
+                                    {(idea.smallerSparks || []).length > 0 && (
                                         <span className="bg-blue-100 dark:bg-blue-400 text-blue-600 dark:text-blue-950 px-1.5 py-0.5 rounded-md text-[8px]">
                                             {idea.smallerSparks.length}
                                         </span>
@@ -482,8 +496,8 @@ export default function IdeaDetail() {
                             {activeTab === 'core' ? (
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                                     {/* Product Spec Card */}
-                                    <div className="lg:col-span-12 xl:col-span-9 space-y-12">
-                                        <section className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)]' : 'border-slate-200 dark:border-white/[0.05]'} p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] relative overflow-hidden group/spec`}>
+                                    <div className="lg:col-span-12 xl:col-span-9 space-y-8 md:space-y-12 order-2 xl:order-1">
+                                        <section className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)]' : 'border-slate-200 dark:border-white/[0.05]'} p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] relative overflow-hidden group/spec`}>
                                             <div className={`absolute top-0 right-0 w-64 h-64 ${isHighViability ? 'bg-yellow-500/10' : 'bg-blue-600/5'} blur-[80px]`} />
 
                                             <div className="flex justify-between items-start mb-10 relative z-10">
@@ -505,6 +519,21 @@ export default function IdeaDetail() {
                                                         className="opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
                                                     >
                                                         <Edit3 size={12} /> {editingSection === 'coreSpec' ? 'Save' : 'Edit'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isSpeaking) {
+                                                                stop();
+                                                            } else {
+                                                                const textToRead = `Product Specification. The Problem: ${idea.forgeSpec.problem}. The Solution: ${idea.forgeSpec.solution}. Target Audience: ${idea.forgeSpec.targetAudience}.`;
+                                                                speak(textToRead);
+                                                            }
+                                                        }}
+                                                        className={`opacity-60 group-hover/spec:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all ${isSpeaking ? 'bg-red-500 text-white border-red-500' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10'}`}
+                                                    >
+                                                        {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} className={!isSpeaking ? 'animate-pulse' : ''} />}
+                                                        <span className="hidden md:inline">{isSpeaking ? 'Stop Reading' : 'Read Full Spec'}</span>
+                                                        <span className="md:hidden">{isSpeaking ? 'Stop' : 'Listen'}</span>
                                                     </button>
                                                     <button
                                                         onClick={() => openChatWithContext('Core Specification')}
@@ -766,7 +795,7 @@ export default function IdeaDetail() {
                                                 </div>
 
                                                 {/* NEURAL NOTES - HIGH PRIORITY CONTEXT */}
-                                                <div className="md:col-span-2 bg-gradient-to-br from-blue-600/5 to-purple-600/5 border border-blue-500/10 p-12 rounded-[3.5rem] space-y-4 hover:border-blue-500/30 transition-all group/exp relative">
+                                                <div className="md:col-span-2 bg-gradient-to-br from-blue-600/5 to-purple-600/5 border border-blue-500/10 p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] space-y-4 hover:border-blue-500/30 transition-all group/exp relative">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex items-center gap-3">
                                                             <div className="p-2 bg-blue-100 dark:bg-blue-600/20 rounded-xl text-blue-600 dark:text-blue-400 group-hover/exp:bg-blue-600 group-hover/exp:text-white transition-all">
@@ -799,7 +828,7 @@ export default function IdeaDetail() {
                                                                 <div className="space-y-2">
                                                                     <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Available Sparks for Reference</div>
                                                                     <div className="flex flex-wrap gap-2">
-                                                                        {idea.smallerSparks.map((s: any) => (
+                                                                        {(idea.smallerSparks || []).map((s: any) => (
                                                                             <button
                                                                                 key={s.id}
                                                                                 type="button"
@@ -859,7 +888,7 @@ export default function IdeaDetail() {
                                                 </div>
 
                                                 {/* 1. Executive Summary */}
-                                                <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-600/10 dark:to-purple-600/10 border border-blue-200 dark:border-blue-500/20 p-12 rounded-[3.5rem] relative overflow-hidden">
+                                                <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-600/10 dark:to-purple-600/10 border border-blue-200 dark:border-blue-500/20 p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] relative overflow-hidden">
                                                     <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/10 blur-[100px]" />
                                                     <div className="relative z-10">
                                                         <div className="flex justify-between items-center mb-6">
@@ -880,7 +909,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 2. Problem Analysis */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button
                                                             onClick={() => toggleDeepDiveSection('problem')}
@@ -928,7 +957,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 3. Solution Architecture */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('solution')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -955,7 +984,7 @@ export default function IdeaDetail() {
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Key Features</h4>
                                                                     <ul className="space-y-2">
-                                                                        {idea.deepDive.solutionArchitecture.keyFeatures.map((feature: string, i: number) => (
+                                                                        {(idea.deepDive?.solutionArchitecture?.keyFeatures || []).map((feature: string, i: number) => (
                                                                             <li key={i} className="flex items-start gap-3">
                                                                                 <div className="w-6 h-6 bg-green-100 dark:bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                                                                     <div className="w-2 h-2 bg-green-500 rounded-full" />
@@ -975,7 +1004,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 4. Market Opportunity */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('market')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1019,7 +1048,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 5. Competitive Landscape */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('competitive')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1042,7 +1071,7 @@ export default function IdeaDetail() {
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Direct Competitors</h4>
                                                                     <div className="flex flex-wrap gap-3">
-                                                                        {idea.deepDive.competitiveLandscape.directCompetitors.map((comp: string, i: number) => (
+                                                                        {(idea.deepDive?.competitiveLandscape?.directCompetitors || []).map((comp: string, i: number) => (
                                                                             <span key={i} className="px-4 py-2 bg-purple-50 dark:bg-purple-600/10 border border-purple-200 dark:border-purple-500/20 rounded-xl text-sm font-bold text-purple-600 dark:text-purple-400">{comp}</span>
                                                                         ))}
                                                                     </div>
@@ -1061,7 +1090,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 6. Business Model */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('business')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1099,7 +1128,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 7. Go-to-Market */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('gtm')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1137,7 +1166,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 8. Financial Projections */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('financial')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1160,20 +1189,20 @@ export default function IdeaDetail() {
                                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                                     <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 1</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year1}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive?.financialProjections?.year1}</p>
                                                                     </div>
                                                                     <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 2</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year2}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive?.financialProjections?.year2}</p>
                                                                     </div>
                                                                     <div className="p-6 bg-orange-50 dark:bg-orange-600/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
                                                                         <h4 className="text-xs font-black text-orange-600 dark:text-orange-500 uppercase tracking-[0.3em] mb-3">Year 3</h4>
-                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive.financialProjections.year3}</p>
+                                                                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{idea.deepDive?.financialProjections?.year3}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Path to Profitability</h4>
-                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive.financialProjections.breakeven}</p>
+                                                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{idea.deepDive?.financialProjections?.breakeven}</p>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -1181,7 +1210,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 9. Risk Assessment */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('risks')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1201,7 +1230,7 @@ export default function IdeaDetail() {
                                                     <AnimatePresence>
                                                         {expandedDeepDiveSections.has('risks') && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
-                                                                {idea.deepDive.riskAssessment.risks.map((risk: any, i: number) => (
+                                                                {(idea.deepDive?.riskAssessment?.risks || []).map((risk: any, i: number) => (
                                                                     <div key={i} className="p-6 bg-red-50 dark:bg-red-600/5 border border-red-200 dark:border-red-500/10 rounded-2xl">
                                                                         <h4 className="text-sm font-black text-red-600 dark:text-red-400 mb-2">{risk.risk}</h4>
                                                                         <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed"><span className="text-green-600 dark:text-green-500 font-bold">Mitigation:</span> {risk.mitigation}</p>
@@ -1213,7 +1242,7 @@ export default function IdeaDetail() {
                                                 </section>
 
                                                 {/* 10. Success Metrics */}
-                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-12 rounded-[3.5rem]">
+                                                <section className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem]">
                                                     <div className="flex justify-between items-center mb-6">
                                                         <button onClick={() => toggleDeepDiveSection('metrics')} className="flex items-center gap-3 flex-1">
                                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
@@ -1240,7 +1269,7 @@ export default function IdeaDetail() {
                                                                 <div>
                                                                     <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">Key Performance Indicators</h4>
                                                                     <ul className="space-y-3">
-                                                                        {idea.deepDive.successMetrics.kpis.map((kpi: string, i: number) => (
+                                                                        {(idea.deepDive?.successMetrics?.kpis || []).map((kpi: string, i: number) => (
                                                                             <li key={i} className="flex items-start gap-3">
                                                                                 <div className="w-6 h-6 bg-indigo-100 dark:bg-indigo-600/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                                                                                     <TrendingUp size={14} className="text-indigo-600 dark:text-indigo-500" />
@@ -1259,7 +1288,7 @@ export default function IdeaDetail() {
 
                                         {/* Show old sections only if no deepDive yet (legacy support) */}
                                         {!idea.deepDive && idea.forgeSpec.description && (
-                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-12 rounded-[3.5rem] group/solution">
+                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] group/solution">
                                                 <div className="flex justify-between items-center mb-8">
                                                     <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.5em]">Solution Deep Dive</h2>
                                                     <button
@@ -1288,7 +1317,7 @@ export default function IdeaDetail() {
                                         )}
 
                                         {idea.marketResearch && (
-                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-12 rounded-[3.5rem] grid grid-cols-1 md:grid-cols-2 gap-12 group/market">
+                                            <section className="bg-white/40 dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.03] p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] grid grid-cols-1 md:grid-cols-2 gap-12 group/market">
                                                 <div className="space-y-6">
                                                     <div className="flex justify-between items-center">
                                                         <h3 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.5em] flex items-center gap-2">
@@ -1302,7 +1331,7 @@ export default function IdeaDetail() {
                                                         </button>
                                                     </div>
                                                     <div className="flex flex-wrap gap-3">
-                                                        {idea.marketResearch.competitors.map((c: string, i: number) => (
+                                                        {(idea.marketResearch?.competitors || []).map((c: string, i: number) => (
                                                             <span key={i} className="px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 capitalize hover:text-slate-900 dark:hover:text-white hover:border-blue-500/30 transition-all cursor-default">
                                                                 {c}
                                                             </span>
@@ -1314,7 +1343,7 @@ export default function IdeaDetail() {
                                                         <TrendingUp size={14} /> Market Trends
                                                     </h3>
                                                     <div className="flex flex-wrap gap-3">
-                                                        {idea.marketResearch.trends.map((t: string, i: number) => (
+                                                        {(idea.marketResearch?.trends || []).map((t: string, i: number) => (
                                                             <span key={i} className="px-4 py-2 bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 rounded-xl text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-all cursor-default">
                                                                 # {t}
                                                             </span>
@@ -1325,26 +1354,26 @@ export default function IdeaDetail() {
                                         )}
 
                                         {idea.roadmap && (
-                                            <section className="bg-gradient-to-br from-white to-slate-50 dark:from-[#0a0c10] dark:to-[#010409] p-12 lg:p-20 rounded-[4rem] border border-slate-200 dark:border-white/[0.03] relative overflow-hidden min-h-[600px] flex flex-col items-center group/roadmap">
-                                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.05),transparent_70%)]" />
+                                            <section className="bg-gradient-to-br from-white to-slate-50 dark:from-[#0a0c10] dark:to-[#010409] p-8 md:p-12 lg:p-20 rounded-[2.5rem] md:rounded-[4rem] border border-slate-200 dark:border-white/[0.03] relative overflow-hidden min-h-[600px] flex flex-col items-center group/roadmap">
+                                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(37,99,235,0.05),transparent_70%)]" />
 
-                                                <h2 className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.6em] mb-24 flex items-center justify-center gap-4 text-center relative z-10">
-                                                    <div className="w-12 h-px bg-blue-500/20" />
-                                                    Evolution Atlas
-                                                    <div className="w-12 h-px bg-blue-500/20" />
+                                                <h2 className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.6em] mb-16 md:mb-24 flex items-center justify-center gap-4 text-center relative z-10 w-full">
+                                                    <div className="hidden md:block w-12 h-px bg-blue-500/20" />
+                                                    Global Evolution Atlas
+                                                    <div className="hidden md:block w-12 h-px bg-blue-500/20" />
                                                 </h2>
 
                                                 <button
                                                     onClick={() => openChatWithContext('Evolution Roadmap')}
-                                                    className="absolute top-12 right-12 opacity-60 group-hover/roadmap:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-slate-900 dark:hover:text-white bg-blue-50 dark:bg-blue-600/10 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-600 z-50"
+                                                    className="relative md:absolute md:top-12 md:right-12 mb-12 md:mb-0 opacity-100 md:opacity-60 group-hover/roadmap:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-slate-900 dark:hover:text-white bg-blue-50 dark:bg-blue-600/10 px-6 py-3 rounded-full border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-600 z-50 shadow-lg shadow-blue-500/10"
                                                 >
                                                     <MessageSquare size={12} /> Discuss Strategy
                                                 </button>
 
                                                 {/* Mind Map Structure */}
-                                                <div className="relative w-full max-w-5xl h-[400px] flex items-center justify-center relative z-10">
-                                                    {/* SVG Connections */}
-                                                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-20">
+                                                <div className="relative w-full max-w-5xl md:h-[400px] flex flex-col md:flex-row items-center justify-center relative z-10">
+                                                    {/* Desktop SVG Connections */}
+                                                    <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-20">
                                                         <defs>
                                                             <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                                 <stop offset="0%" stopColor="#2563eb" stopOpacity="0" />
@@ -1355,8 +1384,11 @@ export default function IdeaDetail() {
                                                         <path d="M 100 200 Q 250 50 500 200 T 900 200" fill="transparent" stroke="url(#line-grad)" strokeWidth="2" strokeDasharray="8 8" className="animate-dash" />
                                                     </svg>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-8 w-full">
-                                                        {idea.roadmap.map((item: any, i: number) => (
+                                                    {/* Mobile Vertical Connection */}
+                                                    <div className="md:hidden absolute left-1/2 -translate-x-1/2 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-blue-500/30 to-transparent border-l border-dashed border-blue-500/20" />
+
+                                                    <div className="flex flex-col md:grid md:grid-cols-5 gap-12 md:gap-8 w-full relative">
+                                                        {(idea.roadmap || []).map((item: any, i: number) => (
                                                             <motion.div
                                                                 key={item.id}
                                                                 initial={{ opacity: 0, scale: 0.8 }}
@@ -1367,27 +1399,21 @@ export default function IdeaDetail() {
                                                                 {/* The Node */}
                                                                 <button
                                                                     onClick={() => setActivePhase(item)}
-                                                                    className="w-20 h-20 rounded-full bg-white dark:bg-[#0a0c10] border-2 border-slate-100 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-blue-700 dark:group-hover:text-white"
+                                                                    className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white dark:bg-[#0a0c10] border-2 border-slate-100 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-500 hover:border-blue-500 hover:scale-110 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] transition-all z-20 relative group-hover:text-blue-700 dark:group-hover:text-white"
                                                                 >
                                                                     <div className="absolute inset-0 rounded-full bg-blue-600/5 scale-0 group-hover:scale-150 transition-transform duration-700 blur-xl" />
-                                                                    <span className="text-xl font-black italic">{i + 1}</span>
+                                                                    <span className="text-lg md:text-xl font-black italic">{i + 1}</span>
                                                                 </button>
 
-                                                                {/* Label - Only show if active */}
-                                                                {activePhase?.id === item.id && (
-                                                                    <motion.div
-                                                                        initial={{ opacity: 0, y: 10 }}
-                                                                        animate={{ opacity: 1, y: 0 }}
-                                                                        className="mt-6 text-center absolute top-24 left-1/2 -translate-x-1/2 w-48 z-30 pointer-events-none"
-                                                                    >
-                                                                        <div className="text-[8px] font-black text-blue-600 dark:text-blue-500 tracking-[0.3em] uppercase mb-2 bg-white/80 dark:bg-[#0a0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-blue-200 dark:border-blue-500/20 inline-block">
-                                                                            {item.phase}
-                                                                        </div>
-                                                                        <div className="text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-xl leading-tight">
-                                                                            {item.task}
-                                                                        </div>
-                                                                    </motion.div>
-                                                                )}
+                                                                {/* Label - Improved for mobile */}
+                                                                <div className="mt-4 md:mt-6 text-center md:absolute md:top-24 md:left-1/2 md:-translate-x-1/2 w-48 z-30 pointer-events-none transition-all group-hover:translate-y-1">
+                                                                    <div className="text-[8px] font-black text-blue-600 dark:text-blue-500 tracking-[0.3em] uppercase mb-2 bg-white/80 dark:bg-[#0a0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-blue-200 dark:border-blue-500/20 inline-block">
+                                                                        {item.phase}
+                                                                    </div>
+                                                                    <div className="text-[10px] md:text-xs font-bold text-slate-800 dark:text-white bg-white/90 dark:bg-[#0a0c10]/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-xl leading-tight">
+                                                                        {item.task}
+                                                                    </div>
+                                                                </div>
 
                                                                 {/* Connector Dot */}
                                                                 {i < 4 && (
@@ -1398,16 +1424,16 @@ export default function IdeaDetail() {
                                                     </div>
                                                 </div>
 
-                                                <p className="mt-20 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">Click any sector to expand intelligence</p>
+                                                <p className="mt-12 md:mt-20 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse text-center">Tap any node to expand intelligence</p>
                                             </section>
                                         )}
                                     </div>
 
                                     {/* Stress Test Sidebar */}
-                                    <div className="lg:col-span-12 xl:col-span-3 space-y-12">
+                                    <div className="lg:col-span-12 xl:col-span-3 space-y-8 md:space-y-12 order-1 xl:order-2">
 
 
-                                        <div className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/40 shadow-[0_0_50px_rgba(234,179,8,0.15)] theme-transition' : 'border-slate-200 dark:border-white/[0.05]'} p-12 rounded-[3.5rem] flex flex-col items-center text-center relative overflow-hidden`}>
+                                        <div className={`bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-2xl border ${isHighViability ? 'border-yellow-500/40 shadow-[0_0_50px_rgba(234,179,8,0.15)] theme-transition' : 'border-slate-200 dark:border-white/[0.05]'} p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] flex flex-col items-center text-center relative overflow-hidden`}>
                                             {isHighViability && <div className="absolute inset-0 bg-yellow-500/5 animate-pulse" />}
                                             <h2 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.4em] mb-10 relative z-10">Viability Index</h2>
                                             <div className="relative w-56 h-56 flex items-center justify-center z-10">
@@ -1428,11 +1454,11 @@ export default function IdeaDetail() {
                                             </div>
 
                                             {/* Viability Test Trigger Button */}
-                                            <div className="mt-8 relative z-10 w-full flex justify-center">
+                                            <div className="mt-8 relative z-10 w-full flex flex-col gap-3">
                                                 <button
                                                     onClick={() => handleStressTest(true)}
                                                     disabled={isStressTesting}
-                                                    className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all flex items-center gap-3 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                                                 >
                                                     {isStressTesting ? (
                                                         <>
@@ -1446,6 +1472,23 @@ export default function IdeaDetail() {
                                                         </>
                                                     )}
                                                 </button>
+                                                {idea.score && (
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isSpeaking) {
+                                                                stop();
+                                                            } else {
+                                                                const status = (idea.score || 0) >= 80 ? 'Investment Grade' : (idea.score || 0) > 60 ? 'Venture Solid' : (idea.score || 0) > 30 ? 'High Friction' : 'Market Mirage';
+                                                                const textToRead = `Viability Report. Overall Score: ${idea.score} percent. Classification: ${status}. Critical Risk Kill Switch: ${idea.killSwitch || 'No data'}. Reality Check: ${idea.realityCheck || 'No data'}.`;
+                                                                speak(textToRead);
+                                                            }
+                                                        }}
+                                                        className={`w-full px-8 py-3 rounded-full font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 border ${isSpeaking ? 'bg-red-500 text-white border-red-500' : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-blue-500/30'}`}
+                                                    >
+                                                        {isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} className={!isSpeaking ? 'animate-pulse' : ''} />}
+                                                        <span>{isSpeaking ? 'Stop Reading' : 'Listen to Report'}</span>
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {idea.viabilityBreakdown && (
@@ -1588,7 +1631,7 @@ export default function IdeaDetail() {
                                                     Critical Risks
                                                 </h2>
                                                 <ul className="space-y-4">
-                                                    {idea.risks.map((risk: any, i: number) => (
+                                                    {(idea.risks || []).map((risk: any, i: number) => (
                                                         <motion.li
                                                             initial={{ opacity: 0, x: -10 }}
                                                             animate={{ opacity: 1, x: 0 }}
@@ -1655,8 +1698,8 @@ export default function IdeaDetail() {
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {idea.smallerSparks?.length > 0 ? (
-                                                        [...idea.smallerSparks].reverse().map((spark: any) => (
+                                                    {(idea.smallerSparks || []).length > 0 ? (
+                                                        [...(idea.smallerSparks || [])].reverse().map((spark: any) => (
                                                             <motion.div
                                                                 key={spark.id}
                                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -1791,7 +1834,17 @@ export default function IdeaDetail() {
                                         )}
                                         {chatHistory.map((msg, i) => (
                                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`max-w-3xl px-6 py-4 rounded-3xl ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/5 border border-white/5 text-slate-300 rounded-bl-none'}`}>
+                                                <div className={`max-w-3xl px-6 py-4 rounded-3xl relative group ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/5 border border-white/5 text-slate-300 rounded-bl-none'}`}>
+                                                    {msg.role === 'ai' && (
+                                                        <button
+                                                            onClick={() => isSpeaking ? stop() : speak(msg.text.replace(/```json[\s\S]*?```/g, '').replace(/[#*`]/g, '').trim())}
+                                                            className="absolute -top-10 right-0 md:-right-12 md:top-0 p-2 text-slate-500 hover:text-blue-500 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center gap-2"
+                                                            title="Read Advice"
+                                                        >
+                                                            {isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                                                            <span className="md:hidden text-[10px] font-black uppercase tracking-widest">Listen</span>
+                                                        </button>
+                                                    )}
                                                     {msg.role === 'ai' ? (
                                                         <div className="prose prose-invert prose-sm max-w-none break-words">
                                                             {(() => {
@@ -1953,20 +2006,23 @@ export default function IdeaDetail() {
                                     </div>
 
                                     {/* Input */}
-                                    <form onSubmit={handleConsult} className="relative">
+                                    <form onSubmit={handleConsult} className="relative flex items-center">
                                         <input
                                             value={query}
                                             onChange={e => setQuery(e.target.value)}
                                             placeholder={activeSection ? `Ask about ${activeSection}...` : "Type your query here..."}
-                                            className="w-full bg-[#010409] border border-white/10 rounded-2xl pl-6 pr-20 py-4 text-slate-300 focus:outline-none focus:border-blue-500/50"
+                                            className="w-full bg-[#010409] border border-white/10 rounded-2xl pl-6 pr-28 py-4 text-slate-300 focus:outline-none focus:border-blue-500/50"
                                         />
-                                        <button
-                                            type="submit"
-                                            disabled={isConsulting || !query.trim()}
-                                            className="absolute right-2 top-2 p-2 bg-white/10 hover:bg-blue-600 rounded-xl transition-colors disabled:opacity-50"
-                                        >
-                                            {isConsulting ? <Loader2 size={20} className="animate-spin text-slate-400" /> : <Send size={20} className="text-white" />}
-                                        </button>
+                                        <div className="absolute right-2 top-2 flex items-center gap-2">
+                                            <VoiceInput onTranscript={(text: string) => setQuery(prev => prev + (prev ? ' ' : '') + text)} />
+                                            <button
+                                                type="submit"
+                                                disabled={isConsulting || !query.trim()}
+                                                className="p-2 bg-white/10 hover:bg-blue-600 rounded-xl transition-colors disabled:opacity-50"
+                                            >
+                                                {isConsulting ? <Loader2 size={20} className="animate-spin text-slate-400" /> : <Send size={20} className="text-white" />}
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>

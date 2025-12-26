@@ -1,5 +1,6 @@
-import { Trash2, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 
 interface IdeaCardProps {
     idea: {
@@ -15,6 +16,7 @@ interface IdeaCardProps {
 }
 
 export default function IdeaCard({ idea, onDelete, onForge }: IdeaCardProps) {
+    const { speak, stop, isSpeaking } = useSpeechSynthesis();
     return (
         <motion.div
             layout
@@ -34,12 +36,24 @@ export default function IdeaCard({ idea, onDelete, onForge }: IdeaCardProps) {
                     </h3>
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">SPARK-ID: {idea._id.slice(-6).toUpperCase()}</p>
                 </div>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(idea._id); }}
-                    className="p-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-red-500/10 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0"
-                >
-                    <Trash2 size={18} />
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            isSpeaking ? stop() : speak(`${idea.title}. ${idea.description}`);
+                        }}
+                        className={`p-3 rounded-2xl transition-all opacity-0 group-hover:opacity-100 ${isSpeaking ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:text-blue-500'}`}
+                        title={isSpeaking ? "Stop Reading" : "Read Summary"}
+                    >
+                        {isSpeaking ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(idea._id); }}
+                        className="p-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-red-500/10 dark:hover:bg-red-500/20 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                </div>
             </div>
 
             <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-8 flex-1 line-clamp-6 overflow-hidden">

@@ -28,6 +28,9 @@ export const ideaController = {
             };
 
             const result = await db.collection('ideas').insertOne(newIdea);
+
+            console.log(`[DEBUG] New Spark Created: ${title} | User: ${creatorId} | ID: ${result.insertedId}`);
+
             res.status(201).json({ ...newIdea, _id: result.insertedId });
         } catch (error) {
             console.error('Create Idea Error:', error);
@@ -43,6 +46,9 @@ export const ideaController = {
             const creatorId = (req as any).user.sub;
             const db = getDb();
             const ideas = await db.collection('ideas').find({ creatorId }).sort({ createdAt: -1 }).toArray();
+
+            console.log(`[DEBUG] Listing sparks for User: ${creatorId} | Found: ${ideas.length}`);
+
             res.status(200).json(ideas);
         } catch (error) {
             console.error('List Ideas Error:', error);
