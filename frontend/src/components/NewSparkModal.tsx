@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import VoiceInput from './VoiceInput';
 
 interface NewSparkModalProps {
     isOpen: boolean;
@@ -79,7 +80,10 @@ export default function NewSparkModal({ isOpen, onClose, onSubmit }: NewSparkMod
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] px-2">Friction & Vision</label>
+                                <div className="flex items-center justify-between px-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Friction & Vision</label>
+                                    <VoiceInput onTranscript={(text: string) => setDescription(prev => prev + (prev ? ' ' : '') + text)} />
+                                </div>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}

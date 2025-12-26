@@ -1,15 +1,11 @@
-import { Rocket, ShieldCheck, Sparkles, Zap, ChevronRight, Menu, X } from 'lucide-react'
+import { Rocket, ShieldCheck, Sparkles, Zap, ChevronRight } from 'lucide-react'
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import Logo from '../components/Logo';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { motion } from 'framer-motion';
 
 export default function LandingPage() {
-    const { login, register, isAuthenticated, user, isLoading } = useKindeAuth();
+    const { login, isAuthenticated, isLoading } = useKindeAuth();
     const navigate = useNavigate();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     if (isLoading) return <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-6">
@@ -27,117 +23,16 @@ export default function LandingPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
             </div>
 
-            {/* Mobile Menu Overlay */}
-            <AnimatePresence>
-                {isMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="absolute top-0 left-0 w-full bg-[#020617]/95 backdrop-blur-xl border-b border-white/10 p-6 z-50 flex flex-col gap-6 lg:hidden"
-                    >
-                        <div className="flex justify-between items-center">
-                            <Logo iconSize={24} />
-                            <div className="flex items-center gap-3 lg:hidden">
-                                <ThemeToggle />
-                                <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200 dark:bg-white/5 rounded-full">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            {!isAuthenticated ? (
-                                <>
-                                    <button
-                                        onClick={() => login()}
-                                        className="w-full py-4 text-center text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-black uppercase tracking-widest text-sm bg-slate-200 dark:bg-white/5 rounded-2xl transition-all"
-                                    >
-                                        Access Forge
-                                    </button>
-                                    <button
-                                        onClick={() => register()}
-                                        className="w-full py-4 text-center bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tighter text-lg shadow-xl shadow-blue-600/20"
-                                    >
-                                        Create Account
-                                    </button>
-                                </>
-                            ) : (
-                                <button
-                                    onClick={() => navigate('/dashboard')}
-                                    className="w-full py-4 text-center bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tighter text-lg shadow-xl shadow-blue-600/20"
-                                >
-                                    Go to Workspace
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Nav Section - Full Width */}
-            <nav className="relative z-10 w-full px-4 md:px-12 py-6 md:py-10 flex justify-between items-center">
-                <Logo />
-
-                {/* Desktop Nav */}
-                <div className="hidden lg:flex items-center gap-8">
-                    <ThemeToggle />
-                    {!isAuthenticated ? (
-                        <>
-                            <button
-                                onClick={() => login()}
-                                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-black uppercase tracking-widest text-xs transition-colors"
-                            >
-                                Access Forge
-                            </button>
-                            <button
-                                onClick={() => register()}
-                                className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 px-8 py-3.5 rounded-2xl font-black uppercase tracking-tighter text-sm transition-all transform hover:scale-105 active:scale-95 shadow-2xl"
-                            >
-                                Create Account
-                            </button>
-                        </>
-                    ) : (
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md">
-                                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 tracking-tight">{user?.email}</span>
-                            </div>
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-2xl font-black uppercase tracking-tighter text-sm transition-all shadow-xl shadow-blue-600/30"
-                            >
-                                Go to Workspace
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Mobile Menu Toggle */}
-                <button
-                    onClick={() => setIsMenuOpen(true)}
-                    className="lg:hidden p-2 text-slate-900 dark:text-white bg-slate-100 dark:bg-white/10 rounded-xl"
-                >
-                    <Menu size={24} />
-                </button>
-            </nav>
-
             {/* Hero Section - expansive split layout */}
             <main className="relative z-10 w-full px-4 md:px-12 lg:px-20 pt-10 md:pt-16 pb-20 md:pb-40 grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 items-center min-h-[calc(100vh-140px)]">
                 <div className="lg:col-span-7 space-y-10">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-widest"
-                    >
-                        <Zap size={18} fill="currentColor" />
-                        Neural Engine: Gemini 2.5 Flash
-                    </motion.div>
+                    <div className="h-6" /> {/* Placeholder/Spacer for removed badge */}
 
                     <div className="space-y-6">
                         <motion.h1
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-5xl md:text-7xl xl:text-[10rem] font-black text-white leading-[0.85] tracking-tighter"
+                            className="text-[3.5rem] md:text-7xl xl:text-[10rem] font-black text-white leading-[0.85] tracking-tighter"
                         >
                             Forge Your <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500">Masterpiece.</span>
@@ -146,7 +41,7 @@ export default function LandingPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-lg md:text-2xl lg:text-3xl text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed font-medium tracking-tight"
+                            className="text-base md:text-2xl lg:text-3xl text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed font-medium tracking-tight"
                         >
                             The advanced workspace where sparks transcend into products. Reason, stress-test, and build with the speed of thought.
                         </motion.p>
@@ -156,16 +51,16 @@ export default function LandingPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex flex-col sm:flex-row gap-6 pt-6"
+                        className="flex flex-col sm:flex-row gap-4 pt-4"
                     >
                         <button
                             onClick={() => isAuthenticated ? navigate('/dashboard') : login()}
-                            className="group bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-12 rounded-[2rem] text-xl transition-all shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex items-center justify-center gap-4 hover:-translate-y-1 active:translate-y-0"
+                            className="group bg-blue-600 hover:bg-blue-700 text-white font-black py-4 md:py-5 px-10 md:px-12 rounded-2xl md:rounded-[2rem] text-lg md:text-xl transition-all shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex items-center justify-center gap-4 hover:-translate-y-1 active:translate-y-0"
                         >
                             Initialize Workbench
                             <ChevronRight size={24} className="group-hover:translate-x-2 transition-transform" />
                         </button>
-                        <button className="bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-900 dark:text-white font-black py-5 px-12 rounded-[2rem] text-xl border border-slate-200 dark:border-slate-800 transition-all backdrop-blur-md shadow-lg">
+                        <button className="bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-900 dark:text-white font-black py-4 md:py-5 px-10 md:px-12 rounded-2xl md:rounded-[2rem] text-lg md:text-xl border border-slate-200 dark:border-slate-800 transition-all backdrop-blur-md shadow-lg">
                             View Blueprint
                         </button>
                     </motion.div>

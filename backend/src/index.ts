@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { authMiddleware } from './middleware/auth.js';
-import { connectToDatabase } from './config/db.js';
+import { connectToDatabase, getDb } from './config/db.js';
 import ideaRoutes from './routes/idea.routes.js';
 
 dotenv.config();
@@ -13,14 +13,13 @@ const port = process.env.PORT || 5000;
 const allowedOrigins = [
     'http://localhost:5173',
     'https://forge.senatraxai.com',
+    'https://forge.senatraxai.com/',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -39,8 +38,23 @@ app.use('/api/ideas', ideaRoutes);
  * @param {Request} req - The express request object.
  * @param {Response} res - The express response object.
  */
-app.get('/health', (req: Request, res: Response) => {
-    res.status(200).json({ status: 'OK', message: 'IdeaForge Backend is running' });
+app.get('/health', async (req: Request, res: Response) => {
+    try {
+        const db = getDb();
+        // Ping the database to check connectivity
+        await db.command({ ping: 1 });
+        res.status(200).json({
+            status: 'OK',
+            database: 'Connected',
+            message: 'IdeaForge Backend and Database are running'
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'Error',
+            database: 'Disconnected',
+            message: 'Backend is running but cannot connect to database'
+        });
+    }
 });
 
 /**
