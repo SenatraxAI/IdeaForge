@@ -57,7 +57,7 @@ export default function IdeaCard({ idea, onDelete, onForge }: IdeaCardProps) {
             </div>
 
             <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-8 flex-1 line-clamp-6 overflow-hidden">
-                {idea.description}
+                {typeof idea.description === 'string' ? idea.description : JSON.stringify(idea.description)}
             </p>
 
             <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/[0.05] relative z-10">

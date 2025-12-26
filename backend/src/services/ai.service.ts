@@ -61,12 +61,13 @@ export const aiService = {
     /**
      * Develops a rough spark into a full Product Specification.
      */
-    async forgeIdea(title: string, description: string, researchContext?: string) {
+    async forgeIdea(title: string, description: string, goal?: string, researchContext?: string) {
         const prompt = `
             You are "Venty", an expert product strategist and VC mentor.
             Expand this idea spark into a professional product specification.
             
             IDEA: "${title}" - "${description}"
+            PRIMARY GOAL: "${goal || 'General development and viability'}"
             ${researchContext ? `MARKET CONTEXT:\n${researchContext}` : ''}
 
             Return ONLY a valid JSON object:
@@ -77,12 +78,14 @@ export const aiService = {
                 "revenueModel": "How this actually makes money",
                 "description": "A 100-word professional deep dive into the product",
                 "expansions": {
-                    "creativeFlow": "Describe the high-fidelity user journey from intent to completion",
-                    "techStack": "List core technologies, APIs, and AI models required",
-                    "growthLevers": "Key drivers for virality and customer acquisition",
-                    "unitEconomics": "Estimated cost structure and pricing logic"
+                    "creativeFlow": "Describe the high-fidelity user journey (PLAIN STRING only)",
+                    "techStack": "List core technologies, APIs, and AI models (PLAIN STRING only)",
+                    "growthLevers": "Key drivers for virality (PLAIN STRING only)",
+                    "unitEconomics": "Estimated cost structure and pricing logic (PLAIN STRING only - do NOT nest objects)"
                 }
             }
+
+            IMPORTANT: All values MUST be plain strings. Do NOT return an object for fields like "unitEconomics" or "techStack".
         `;
 
         try {
@@ -98,12 +101,13 @@ export const aiService = {
     /**
      * Performs a deep-dive stress test and generates an Evolutionary Roadmap.
      */
-    async stressTestIdea(title: string, forgeSpec: any, researchContext?: string, smallerSparks?: any[]) {
+    async stressTestIdea(title: string, forgeSpec: any, researchContext?: string, smallerSparks?: any[], goal?: string) {
         const prompt = `
             You are "The Adversary". You are NOT a mentor. You are a skeptical, cynical Venture Capitalist who looks for reasons to say "NO".
             Your goal is to destroy this startup idea: "${title}".
             
             SPEC: ${JSON.stringify(forgeSpec)}
+            PRIMARY GOAL: "${goal || 'Standard venture success'}"
             ${researchContext ? `MARKET CONTEXT:\n${researchContext}` : ''}
             ${smallerSparks && smallerSparks.length > 0 ? `SMALLER SPARKS (Pivots/Notes/Agreements):\n${JSON.stringify(smallerSparks)}` : ''}
             ${forgeSpec.expansions?.notes ? `CRITICAL USER NOTES (PRIORITY #1):\n"${forgeSpec.expansions.notes}"` : ''}
@@ -139,7 +143,9 @@ export const aiService = {
             - "riskAssessment": { risks: Array<{ risk, mitigation }> }
             - "successMetrics": { northStar, kpis }
             
-            IMPORTANT: Your analysis and roadmap MUST take the "CRITICAL USER NOTES" into account. If the notes conflict with specific assumptions, the notes WIN, but you should still critique the execution.
+            IMPORTANT: Your analysis and roadmap MUST take the "CRITICAL USER NOTES" and the "PRIMARY GOAL" into account. If the primary goal is social impact or personal growth rather than profit, adjust your scoring and critique to be less penalizing on revenue metrics and more focused on the stated intent. The notes WIN in conflicts.
+            
+            CRITICAL: All descriptive fields (executiveSummary, statement, evidence, urgency, etc.) MUST be plain strings. Do NOT return objects or arrays where a string is expected.
 
             Return ONLY a valid JSON object:
             {
@@ -220,6 +226,7 @@ export const aiService = {
 
             PROJECT CONTEXT:
             Title: ${context.title}
+            Goal/Intent: ${context.goal || 'General'}
             Description: ${context.description}
             Spec: ${JSON.stringify(context.forgeSpec || {})}
             Analysis: ${JSON.stringify({ score: context.score, breakdown: context.viabilityBreakdown })}

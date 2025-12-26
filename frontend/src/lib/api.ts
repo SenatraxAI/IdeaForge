@@ -18,9 +18,9 @@ export const setAuthToken = (token: string | null) => {
 
 export const ideaApi = {
     list: () => api.get('/ideas'),
-    create: (title: string, description: string) => api.post('/ideas', { title, description }),
+    create: (title: string, description: string, goal: string) => api.post('/ideas', { title, description, goal }),
     delete: (id: string) => api.delete(`/ideas/${id}`),
-    update: (id: string, title: string, description: string) => api.patch(`/ideas/${id}`, { title, description }),
+    update: (id: string, title: string, description: string, goal: string) => api.post(`/ideas/${id}/update`, { title, description, goal }),
     forge: (id: string, redo = false) => api.post(`/ideas/${id}/forge${redo ? '?redo=true' : ''}`),
     stressTest: (id: string, redo = false) => api.post(`/ideas/${id}/stress-test${redo ? '?redo=true' : ''}`),
     consult: (id: string, query: string, section?: string, chatHistory?: Array<{ role: string, text: string }>) =>
